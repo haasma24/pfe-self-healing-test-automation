@@ -17,8 +17,9 @@ pipeline {
             steps {
                 script {
                     if (fileExists(env.URLS_FILE)) {
-                        def content = readFile(file: env.URLS_FILE)
-                        def urls = new groovy.json.JsonSlurper().parseText(content)
+                        def content = readFile(file: env.URLS_FILE, encoding: 'UTF-8')
+                        def cleanContent = content.charAt(0) == '\uFEFF' ? content.substring(1) : content
+                        def urls = new groovy.json.JsonSlurper().parseText(cleanContent)
                         env.PAGE_URL = urls.page_url
                         env.COLAB_API_URL = urls.api_url
                         echo "PAGE_URL=${env.PAGE_URL}"

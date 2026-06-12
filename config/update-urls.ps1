@@ -27,7 +27,8 @@ $config = @{
     updated_at = (Get-Date -Format "yyyy-MM-dd HH:mm:ss")
 } | ConvertTo-Json
 
-Set-Content -Path $outputPath -Value $config -Encoding UTF8
+$utf8NoBom = New-Object System.Text.UTF8Encoding $false
+[System.IO.File]::WriteAllText($outputPath, $config, $utf8NoBom)
 Write-Host "URLs sauvegardees dans $outputPath"
 Write-Host "  Page shop : $PageUrl"
 Write-Host "  API Colab  : $ApiUrl"
