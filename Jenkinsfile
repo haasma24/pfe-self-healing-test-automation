@@ -39,11 +39,19 @@ pipeline {
                     def ok = false
                     for (def i = 0; i < retries; i++) {
                         try {
-                            def code = sh(returnStdout: true, script: "curl -s -o nul -w \"%%{http_code}\" \"${api}/ping\"").trim()
-                            if (code == '200') {
-                                echo "Colab API OK (HTTP ${code})"
+                            def result = powershell returnStdout: true, script: """
+                                try {
+                                    \$r = Invoke-WebRequest -Uri '${api}/ping' -UseBasicParsing -TimeoutSec 5
+                                    Write-Host \$r.StatusCode
+                                } catch { Write-Host 'FAIL' }
+                            """
+                            if (result.trim() == '200') {
+                                echo "Colab API OK (HTTP 200)"
                                 ok = true
                                 break
+                            } else {
+                                echo "Waiting for Colab API... attempt ${i+1}/${retries} (got: ${result.trim()})"
+                                sleep 3
                             }
                         } catch (e) {
                             echo "Waiting for Colab API... attempt ${i+1}/${retries}"
