@@ -42,8 +42,8 @@ pipeline {
                             def result = powershell returnStdout: true, script: """
                                 try {
                                     \$r = Invoke-WebRequest -Uri '${api}/ping' -UseBasicParsing -TimeoutSec 5
-                                    Write-Host \$r.StatusCode
-                                } catch { Write-Host 'FAIL' }
+                                    \$r.StatusCode
+                                } catch { 'FAIL' }
                             """
                             if (result.trim() == '200') {
                                 echo "Colab API OK (HTTP 200)"
