@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         CONFIDENCE_THRESHOLD = '0.7'
+        URLS_FILE = 'C:\\ProgramData\\.pfe-urls.json'
     }
 
     stages {
@@ -12,21 +13,18 @@ pipeline {
             }
         }
 
-        stage('Start Infrastructure') {
+        stage('Load URLs') {
             steps {
                 script {
-                    powershell returnStatus: true, script: '''
-                        & "$env:WORKSPACE\\config\\start-infra.ps1"
-                    '''
-                    def urlsFile = "${env.ProgramData}\\.pfe-urls.json"
-                    if (fileExists(urlsFile)) {
-                        def urls = readJSON file: urlsFile
+                    if (fileExists(env.URLS_FILE)) {
+                        def content = readFile(file: env.URLS_FILE)
+                        def urls = new groovy.json.JsonSlurper().parseText(content)
                         env.PAGE_URL = urls.page_url
                         env.COLAB_API_URL = urls.api_url
                         echo "PAGE_URL=${env.PAGE_URL}"
                         echo "COLAB_API_URL=${env.COLAB_API_URL}"
                     } else {
-                        error "Failed to create ${urlsFile}"
+                        error "${env.URLS_FILE} introuvable. Lance config/update-urls.ps1 apres avoir demarre les tunnels."
                     }
                 }
             }
@@ -38,12 +36,14 @@ pipeline {
                     def api = env.COLAB_API_URL
                     def retries = 10
                     def ok = false
-                    for (i = 0; i < retries; i++) {
+                    for (def i = 0; i < retries; i++) {
                         try {
-                            sh "curl -s -o /dev/null -w '%{http_code}' '${api}/ping'"
-                            echo "Colab API is reachable"
-                            ok = true
-                            break
+                            def code = sh(returnStdout: true, script: "curl -s -o nul -w \"%%{http_code}\" \"${api}/ping\"").trim()
+                            if (code == '200') {
+                                echo "Colab API OK (HTTP ${code})"
+                                ok = true
+                                break
+                            }
                         } catch (e) {
                             echo "Waiting for Colab API... attempt ${i+1}/${retries}"
                             sleep 3
@@ -118,11 +118,6 @@ pipeline {
 
     post {
         always {
-            script {
-                powershell returnStatus: true, script: '''
-                    & "$env:WORKSPACE\\config\\stop-infra.ps1"
-                '''
-            }
             cleanWs()
         }
     }
