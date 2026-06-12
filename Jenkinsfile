@@ -25,7 +25,7 @@ pipeline {
                         echo "PAGE_URL=${env.PAGE_URL}"
                         echo "COLAB_API_URL=${env.COLAB_API_URL}"
                     } else {
-                        error "${env.URLS_FILE} introuvable. Lance config/update-urls.ps1 apres avoir demarre les tunnels."
+                        error "${env.URLS_FILE} not found. Run config/update-urls.ps1 after starting tunnels."
                     }
                 }
             }
@@ -70,14 +70,14 @@ pipeline {
                 stage('Test Runner') {
                     steps {
                         dir('test-runner') {
-                            sh 'npm ci'
+                            bat 'npm ci'
                         }
                     }
                 }
                 stage('Dashboard') {
                     steps {
                         dir('dashboard') {
-                            sh 'npm ci'
+                            bat 'npm ci'
                         }
                     }
                 }
@@ -87,7 +87,7 @@ pipeline {
         stage('Build Dashboard') {
             steps {
                 dir('dashboard') {
-                    sh 'npx ng build --configuration production'
+                    bat 'npx ng build --configuration production'
                 }
             }
         }
@@ -100,7 +100,7 @@ pipeline {
             }
             steps {
                 dir('test-runner') {
-                    sh 'npx playwright test --reporter=html,json'
+                    bat 'npx playwright test --reporter=html,json'
                 }
             }
             post {
@@ -118,7 +118,7 @@ pipeline {
                     reportName  : 'Playwright Test Report'
                 ])
                 dir('dashboard') {
-                    sh 'tar -czf ../dashboard-build.tar.gz dist/'
+                    bat 'tar -czf ../dashboard-build.tar.gz dist/'
                 }
                 archiveArtifacts artifacts: 'dashboard-build.tar.gz', fingerprint: true
             }
