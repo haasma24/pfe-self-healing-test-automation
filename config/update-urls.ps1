@@ -3,21 +3,22 @@ param(
     [string]$ApiUrl
 )
 
-$configPath = Join-Path $PSScriptRoot "current-urls.json"
+$outputPath = "$env:USERPROFILE\.pfe-urls.json"
 
-if (-not $PageUrl -and -not $ApiUrl) {
+# Auto-detect ngrok URL
+if (-not $ApiUrl) {
     try {
         $ngrokData = Invoke-RestMethod -Uri "http://localhost:4040/api/tunnels" -ErrorAction SilentlyContinue
         $ngrokUrl = ($ngrokData.tunnels | Where-Object { $_.config.addr -match "localhost:5000" } | Select-Object -First 1).public_url
         if ($ngrokUrl) { $ApiUrl = $ngrokUrl }
     } catch {}
+}
 
-    if (-not $ApiUrl) {
-        $ApiUrl = Read-Host "URL du backend Colab/ngrok (ex: https://xxxx.ngrok-free.app)"
-    }
-    if (-not $PageUrl) {
-        $PageUrl = Read-Host "URL de la page shop (ex: https://xxxx.lhr.life)"
-    }
+if (-not $ApiUrl) {
+    $ApiUrl = Read-Host "URL du backend Colab/ngrok (ex: https://xxxx.ngrok-free.app)"
+}
+if (-not $PageUrl) {
+    $PageUrl = Read-Host "URL de la page shop (ex: https://xxxx.lhr.life)"
 }
 
 $config = @{
@@ -26,10 +27,7 @@ $config = @{
     updated_at = (Get-Date -Format "yyyy-MM-dd HH:mm:ss")
 } | ConvertTo-Json
 
-Set-Content -Path $configPath -Value $config -Encoding UTF8
-
-Write-Host "`nURLs mises a jour dans : $configPath"
+Set-Content -Path $outputPath -Value $config -Encoding UTF8
+Write-Host "URLs sauvegardees dans $outputPath"
 Write-Host "  Page shop : $PageUrl"
 Write-Host "  API Colab  : $ApiUrl"
-Write-Host "`nTu peux maintenant lancer tes tests avec :"
-Write-Host "  cd ../test-runner && npx playwright test"

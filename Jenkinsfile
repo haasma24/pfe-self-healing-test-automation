@@ -2,8 +2,6 @@ pipeline {
     agent any
 
     environment {
-        PAGE_URL = credentials('PAGE_URL')     // URL of the shop page (localhost.run)
-        COLAB_API_URL = credentials('COLAB_API_URL') // URL of the Colab backend (ngrok)
         CONFIDENCE_THRESHOLD = '0.7'
     }
 
@@ -11,6 +9,22 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
+            }
+        }
+
+        stage('Load URLs') {
+            steps {
+                script {
+                    def urlsFile = "${env.USERPROFILE}\\.pfe-urls.json"
+                    if (fileExists(urlsFile)) {
+                        def urls = readJSON file: urlsFile
+                        env.PAGE_URL = urls.page_url
+                        env.COLAB_API_URL = urls.api_url
+                        echo "URLs loaded: PAGE_URL=${env.PAGE_URL}, API_URL=${env.COLAB_API_URL}"
+                    } else {
+                        error "Fichier ${urlsFile} introuvable. Lance d'abord config/update-urls.ps1"
+                    }
+                }
             }
         }
 
@@ -76,19 +90,8 @@ pipeline {
     }
 
     post {
-        failure {
-            emailext(
-                subject: "[FAILED] Pipeline ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: "Pipeline failed: ${env.BUILD_URL}",
-                to: 'hammamiasma52@gmail.com'
-            )
-        }
-        success {
-            emailext(
-                subject: "[SUCCESS] Pipeline ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: "Pipeline succeeded: ${env.BUILD_URL}",
-                to: 'hammamiasma52@gmail.com'
-            )
+        always {
+            cleanWs()
         }
     }
 }
