@@ -1,5 +1,6 @@
-$urlsFile = "$env:USERPROFILE\.pfe-urls.json"
-$pidFile  = "$env:TEMP\pfe-infra-pids.txt"
+$pythonExe = "$env:LOCALAPPDATA\Programs\Python\Python313\python.exe"
+$urlsFile = "$env:ProgramData\.pfe-urls.json"
+$pidFile  = "$env:ProgramData\pfe-infra-pids.txt"
 
 # Kill previous instances
 if (Test-Path $pidFile) {
@@ -11,10 +12,10 @@ if (Test-Path $pidFile) {
 
 # 1. Start shop HTTP server
 $shopDir = Join-Path $PSScriptRoot "..\shop"
-$shopJob = Start-Process -FilePath "python" -ArgumentList "-m http.server 8085" -WorkingDirectory $shopDir -NoNewWindow -PassThru -RedirectStandardOutput "$env:TEMP\pfe-shop.log"
+$shopJob = Start-Process -FilePath $pythonExe -ArgumentList "-m http.server 8085" -WorkingDirectory $shopDir -NoNewWindow -PassThru -RedirectStandardOutput "$env:ProgramData\pfe-shop.log"
 
 # 2. Start SSH tunnel and capture URL
-$sshJob = Start-Process -FilePath "ssh" -ArgumentList "-o StrictHostKeyChecking=no -R 80:localhost:8085 localhost.run" -NoNewWindow -PassThru -RedirectStandardOutput "$env:TEMP\pfe-tunnel.log"
+$sshJob = Start-Process -FilePath "C:\WINDOWS\System32\OpenSSH\ssh.exe" -ArgumentList "-o StrictHostKeyChecking=no -R 80:localhost:8085 localhost.run" -NoNewWindow -PassThru -RedirectStandardOutput "$env:ProgramData\pfe-tunnel.log"
 
 # Save PIDs
 $shopJob.Id, $sshJob.Id | Out-File -FilePath $pidFile -Encoding UTF8
@@ -23,7 +24,7 @@ $shopJob.Id, $sshJob.Id | Out-File -FilePath $pidFile -Encoding UTF8
 $tunnelUrl = $null
 for ($i = 0; $i -lt 60; $i++) {
     Start-Sleep -Seconds 1
-    $log = Get-Content "$env:TEMP\pfe-tunnel.log" -Raw -ErrorAction SilentlyContinue
+    $log = Get-Content "$env:ProgramData\pfe-tunnel.log" -Raw -ErrorAction SilentlyContinue
     if ($log -match 'https://([a-z0-9.-]+)\.lhr\.life') {
         $tunnelUrl = $matches[0]
         Write-Host "Tunnel URL detected: $tunnelUrl"

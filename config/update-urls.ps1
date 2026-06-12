@@ -3,7 +3,7 @@ param(
     [string]$ApiUrl
 )
 
-$outputPath = "$env:USERPROFILE\.pfe-urls.json"
+$outputPath = "$env:ProgramData\.pfe-urls.json"
 
 # Auto-detect ngrok URL
 if (-not $ApiUrl) {

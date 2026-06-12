@@ -18,7 +18,7 @@ pipeline {
                     powershell returnStatus: true, script: '''
                         & "$env:WORKSPACE\\config\\start-infra.ps1"
                     '''
-                    def urlsFile = "${env.USERPROFILE}\\.pfe-urls.json"
+                    def urlsFile = "${env.ProgramData}\\.pfe-urls.json"
                     if (fileExists(urlsFile)) {
                         def urls = readJSON file: urlsFile
                         env.PAGE_URL = urls.page_url

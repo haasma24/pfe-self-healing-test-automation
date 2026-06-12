@@ -1,4 +1,4 @@
-$pidFile = "$env:TEMP\pfe-infra-pids.txt"
+$pidFile = "$env:ProgramData\pfe-infra-pids.txt"
 
 if (Test-Path $pidFile) {
     Get-Content $pidFile | ForEach-Object {
