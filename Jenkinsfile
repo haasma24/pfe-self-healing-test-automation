@@ -12,17 +12,45 @@ pipeline {
             }
         }
 
-        stage('Load URLs') {
+        stage('Start Infrastructure') {
             steps {
                 script {
+                    powershell returnStatus: true, script: '''
+                        & "$env:WORKSPACE\\config\\start-infra.ps1"
+                    '''
                     def urlsFile = "${env.USERPROFILE}\\.pfe-urls.json"
                     if (fileExists(urlsFile)) {
                         def urls = readJSON file: urlsFile
                         env.PAGE_URL = urls.page_url
                         env.COLAB_API_URL = urls.api_url
-                        echo "URLs loaded: PAGE_URL=${env.PAGE_URL}, API_URL=${env.COLAB_API_URL}"
+                        echo "PAGE_URL=${env.PAGE_URL}"
+                        echo "COLAB_API_URL=${env.COLAB_API_URL}"
                     } else {
-                        error "Fichier ${urlsFile} introuvable. Lance d'abord config/update-urls.ps1"
+                        error "Failed to create ${urlsFile}"
+                    }
+                }
+            }
+        }
+
+        stage('Verify Colab API') {
+            steps {
+                script {
+                    def api = env.COLAB_API_URL
+                    def retries = 10
+                    def ok = false
+                    for (i = 0; i < retries; i++) {
+                        try {
+                            sh "curl -s -o /dev/null -w '%{http_code}' '${api}/ping'"
+                            echo "Colab API is reachable"
+                            ok = true
+                            break
+                        } catch (e) {
+                            echo "Waiting for Colab API... attempt ${i+1}/${retries}"
+                            sleep 3
+                        }
+                    }
+                    if (!ok) {
+                        error "Colab API not reachable at ${api}/ping"
                     }
                 }
             }
@@ -80,7 +108,6 @@ pipeline {
                     reportFiles : 'index.html',
                     reportName  : 'Playwright Test Report'
                 ])
-
                 dir('dashboard') {
                     sh 'tar -czf ../dashboard-build.tar.gz dist/'
                 }
@@ -91,6 +118,11 @@ pipeline {
 
     post {
         always {
+            script {
+                powershell returnStatus: true, script: '''
+                    & "$env:WORKSPACE\\config\\stop-infra.ps1"
+                '''
+            }
             cleanWs()
         }
     }
