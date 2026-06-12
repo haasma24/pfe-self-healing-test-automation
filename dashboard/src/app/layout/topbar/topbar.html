@@ -1,0 +1,37 @@
+<div class="topbar">
+  <div class="topbar-left">
+    <h1 class="topbar-title">{{ title }}</h1>
+    <span class="topbar-crumb">{{ crumb }}</span>
+  </div>
+
+  <div class="topbar-right">
+    <div class="sys-pills" *ngIf="system && !isUploadMode">
+      <div class="pill">
+        <svg class="pill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><circle cx="6" cy="6" r="1" fill="currentColor"/><circle cx="6" cy="18" r="1" fill="currentColor"/></svg>
+        <span>{{ system.ram }}</span>
+      </div>
+      <div class="pill">
+        <svg class="pill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+        <span>{{ system.cpu }}</span>
+      </div>
+      <div class="pill">
+        <svg class="pill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/></svg>
+        <span>{{ system.device }}</span>
+      </div>
+    </div>
+
+    <div class="source-badge" *ngIf="isUploadMode">
+      <span>Offline Run</span>
+      <button class="badge-close" (click)="switchToLive()">Go Live</button>
+    </div>
+
+    <div class="conn-dot" [class.online]="isConnected && !isUploadMode"
+         [title]="isConnected ? 'Connected' : 'Disconnected'">
+    </div>
+
+    <button class="btn btn-ghost" (click)="onSimulate()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      {{ isUploadMode ? 'Load Run' : 'Re-run' }}
+    </button>
+  </div>
+</div>

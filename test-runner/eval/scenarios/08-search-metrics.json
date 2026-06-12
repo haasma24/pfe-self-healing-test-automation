@@ -1,0 +1,60 @@
+{
+  "scenario": "Search — broken selectors",
+  "url": "https://edd0eb64e9e2ff.lhr.life/arcane-shop.html",
+  "cases": [
+    {
+      "id": "srch-01",
+      "description": "Typo: search-modall → search-modal",
+      "broken_selector": "#search-modall",
+      "baseline_text": "search modal overlay",
+      "confidence_threshold": 0.30,
+      "has_target": true,
+      "expected": { "id": "search-modal", "tag": "div" }
+    },
+    {
+      "id": "srch-02",
+      "description": "Typo: search-tagg → search-tag (Backpack quick-search)",
+      "broken_selector": ".search-tagg",
+      "baseline_text": "search quick tag filter button",
+      "confidence_threshold": 0.30,
+      "has_target": true,
+      "expected": { "tag": "button", "text_contains": "backpack" }
+    },
+    {
+      "id": "srch-03",
+      "description": "Typo: search-inputt → search-input",
+      "broken_selector": "[data-testid=\"search-inputt\"]",
+      "baseline_text": "inline search input field",
+      "confidence_threshold": 0.30,
+      "has_target": true,
+      "expected": { "id": "search-input", "tag": "input" }
+    },
+    {
+      "id": "srch-04",
+      "description": "Typo: count-totall → count-total",
+      "broken_selector": "#count-totall",
+      "baseline_text": "total product count label",
+      "confidence_threshold": 0.30,
+      "has_target": true,
+      "expected": { "id": "count-total", "tag": "span" }
+    },
+    {
+      "id": "srch-05",
+      "description": "Typo: filter-checkbox-techh → filter-checkbox-tech",
+      "broken_selector": "[data-testid=\"filter-checkbox-techh\"]",
+      "baseline_text": "tech gadgets category filter checkbox",
+      "confidence_threshold": 0.30,
+      "has_target": true,
+      "expected": { "id": "filter-checkbox-tech", "tag": "input" }
+    },
+    {
+      "id": "srch-06",
+      "description": "Sélecteur inexistant — pipeline doit refuser",
+      "broken_selector": "#this-search-element-does-not-exist-xyz999",
+      "baseline_text": "nonexistent search element",
+      "confidence_threshold": 0.30,
+      "has_target": false,
+      "expected": null
+    }
+  ]
+}

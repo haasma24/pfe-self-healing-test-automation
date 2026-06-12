@@ -1,0 +1,112 @@
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 58px;
+  min-height: 58px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+}
+
+.topbar-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.topbar-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.topbar-crumb {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  letter-spacing: 0.04em;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.sys-pills {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 10px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  font-family: var(--mono);
+}
+
+.pill-icon {
+  width: 12px;
+  height: 12px;
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+.source-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--purple-bg);
+  border: 1px solid rgba(124,58,237,0.2);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-size: 11px;
+  color: var(--purple);
+  font-weight: 600;
+
+  .badge-close {
+    background: rgba(124,58,237,0.1);
+    border: none;
+    border-radius: 4px;
+    color: var(--purple);
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    transition: background var(--transition);
+    &:hover { background: rgba(124,58,237,0.2); }
+  }
+}
+
+.conn-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+  flex-shrink: 0;
+  transition: background 0.4s, box-shadow 0.4s;
+
+  &.online {
+    background: var(--emerald);
+    box-shadow: 0 0 8px var(--emerald);
+    animation: pulse 2s infinite;
+  }
+}
+
+@media (max-width: 768px) {
+  .topbar { padding: 0 14px; }
+  .sys-pills { display: none; }
+  .topbar-title { font-size: 14px; }
+}

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>About Us — ARCANE SHOP</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../css/style.css" />
+<style>
+  .page-header { text-align: center; padding: 4rem 2rem 2rem; border-bottom: 1px solid var(--border); }
+  .page-header h1 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; }
+  .page-header p { color: var(--muted); margin-top: .75rem; max-width: 560px; margin-left: auto; margin-right: auto; }
+  .page-content { max-width: 720px; margin: 0 auto; padding: 2.5rem 2rem; line-height: 1.8; font-size: .95rem; color: var(--muted); }
+  .page-content h2 { color: var(--text); font-size: 1.3rem; font-weight: 800; margin: 2rem 0 1rem; }
+  .page-content h2:first-child { margin-top: 0; }
+  .page-content p { margin-bottom: 1rem; }
+  .values-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.5rem 0; }
+  .value-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; text-align: center; }
+  .value-card .icon { font-size: 2rem; margin-bottom: .5rem; }
+  .value-card h3 { font-size: .9rem; font-weight: 700; margin-bottom: .4rem; }
+  .value-card p { font-size: .8rem; color: var(--muted); }
+  @media (max-width: 600px) { .values-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="page-header">
+  <h1>About ARCANE SHOP</h1>
+  <p>Curated gear for exceptional minds — developers, designers, and dreamers.</p>
+  <a href="../index.html" class="btn btn-ghost btn-sm" style="margin-top:1.5rem">← Back to Shop</a>
+</div>
+<div class="page-content">
+  <h2>Our Story</h2>
+  <p>Founded in 2020, ARCANE SHOP was born from a simple observation: the tools we use shape the work we create. We set out to curate a collection of products that combine exceptional design, thoughtful engineering, and lasting quality — from mechanical keyboards and studio headphones to merino apparel and leather goods.</p>
+  <p>Every product in our catalog is tested by our team before it makes the cut. We don't chase trends; we look for pieces that earn a permanent place in your daily workflow.</p>
+
+  <h2>Our Values</h2>
+  <div class="values-grid">
+    <div class="value-card">
+      <div class="icon">🎯</div>
+      <h3>Curation Over Collection</h3>
+      <p>Fewer products, better choices. We'd rather offer 24 great items than 2,000 mediocre ones.</p>
+    </div>
+    <div class="value-card">
+      <div class="icon">🌱</div>
+      <h3>Quality That Lasts</h3>
+      <p>We partner with brands that prioritize durability, repairability, and sustainable materials.</p>
+    </div>
+    <div class="value-card">
+      <div class="icon">🤝</div>
+      <h3>Community First</h3>
+      <p>40,000+ subscribers trust us. We listen, iterate, and put customer experience above all else.</p>
+    </div>
+    <div class="value-card">
+      <div class="icon">🔒</div>
+      <h3>Trust & Transparency</h3>
+      <p>Secure payments, free returns, and honest product reviews. No gimmicks.</p>
+    </div>
+  </div>
+
+  <h2>Contact</h2>
+  <p>Have a question or just want to say hi? Reach out at <strong style="color:var(--text)">hello@arcaneshop.com</strong> or visit our <a href="contact.html" style="color:var(--accent)">contact page</a>.</p>
+</div>
+</body>
+</html>

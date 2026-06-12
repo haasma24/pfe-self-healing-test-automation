@@ -1,0 +1,12 @@
+<div class="stat-card" [style.--accent-color]="accent" [style.--accent-bg]="accent + '18'">
+  <div class="stat-accent" [style.background]="'linear-gradient(90deg, ' + accent + ', transparent)'"></div>
+  <div class="stat-glow"></div>
+  <div class="stat-icon">
+    <ng-content></ng-content>
+  </div>
+  <div class="stat-label">{{ label }}</div>
+  <div class="stat-value">{{ value }}</div>
+  <div class="stat-sub" *ngIf="sub">
+    <span [class]="subClass">{{ sub }}</span>
+  </div>
+</div>

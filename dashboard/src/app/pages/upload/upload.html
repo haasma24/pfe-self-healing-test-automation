@@ -1,0 +1,48 @@
+<div class="page anim-fade">
+  <div class="upload-hdr">
+    <h2 class="page-title">Load a Pipeline Run</h2>
+    <p class="page-desc">Paste or upload a <code>/dashboard-data</code> JSON response to analyse it offline — no live connection needed.</p>
+  </div>
+
+  <div class="upload-grid">
+    <div class="card anim-slide">
+      <div class="card-header"><span class="card-title">JSON Input</span><button class="btn btn-ghost" (click)="loadExample()" style="padding:4px 10px;font-size:10px">Load example</button></div>
+      <div class="card-body">
+        <label class="file-drop" for="file-input">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span>Drop a <code>.json</code> file or click to browse</span>
+          <input id="file-input" type="file" accept=".json" (change)="onFileChange($event)" hidden />
+        </label>
+
+        <div class="divider"><span>or paste JSON below</span></div>
+
+        <div class="input-group"><label>Run label (optional)</label><input type="text" [(ngModel)]="runName" class="text-input" placeholder="e.g. Run after deploy #42" /></div>
+        <div class="input-group"><label>JSON payload</label><textarea class="json-input" [(ngModel)]="jsonText" placeholder='{ "stats": {…}, "lastRunDetails": {…} }' rows="12"></textarea></div>
+
+        <div class="error-msg" *ngIf="error">{{ error }}</div>
+        <div class="success-msg" *ngIf="success">Run loaded — redirecting...</div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" (click)="load()" [disabled]="!jsonText.trim()">Load & Analyse</button>
+          <button class="btn btn-ghost" (click)="goLive()">Go Live</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card anim-slide">
+      <div class="card-header"><span class="card-title">Expected Format</span></div>
+      <div class="card-body" style="gap:0">
+        <p class="help-text">Paste the raw JSON from your Flask API's <code>/dashboard-data</code> endpoint. It should have these top-level keys:</p>
+        <div class="schema-list">
+          <div class="schema-row"><span class="schema-key">stats</span><span class="schema-desc">HealingStats — total_attempts, typo_fixes, ml_fixes, failed_heals, start_time</span></div>
+          <div class="schema-row"><span class="schema-key">system</span><span class="schema-desc">SystemMetrics — ram, cpu, server_status, device</span></div>
+          <div class="schema-row"><span class="schema-key">history</span><span class="schema-desc">Array of past heal calls (can be empty)</span></div>
+          <div class="schema-row"><span class="schema-key">lastRunDetails</span><span class="schema-desc">bestScore, totalCandidates, pipelineTimeSeconds, confidenceGap, layers[], funnel[], candidates[], locators[], stageCounts[], stageTimings[], logs[]</span></div>
+        </div>
+        <p class="help-text" style="margin-top:14px">To capture a run from your Colab API:</p>
+        <pre class="code-block">curl https://&#60;your-url&#62;/dashboard-data | python3 -m json.tool > run.json</pre>
+        <p class="help-text" style="margin-top:14px">This dashboard works with any compatible pipeline — not just Playwright.</p>
+      </div>
+    </div>
+  </div>
+</div>

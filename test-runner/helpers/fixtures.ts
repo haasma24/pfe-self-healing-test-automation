@@ -1,0 +1,246 @@
+// helpers/fixtures.ts
+// ══════════════════════════════════════════════════════════════════════════════
+//  Self-healing Playwright fixtures.
+//
+//  HOW IT WORKS
+//  ─────────────
+//  The key insight: `expect(locator).toBeVisible()` fails INSIDE Playwright's
+//  expect engine, not inside any method on the Locator object.  A Proxy around
+//  the Locator therefore cannot catch it.
+//
+//  Solution: attach a `_healingMeta` tag to every wrapped Locator, then export
+//  a custom `expect` that, on assertion failure, reads that tag, calls the
+//  Colab /heal API, retries the same assertion with the healed locator, and
+//  only re-throws if healing also fails.
+//
+//  Test writers write 100% normal Playwright — nothing special required.
+// ══════════════════════════════════════════════════════════════════════════════
+
+import { test as base, expect as baseExpect, Page, Locator } from '@playwright/test';
+import path from 'path';
+import { healSelector, patchTestFile, saveHealReport } from './healer.js';
+import { PAGE_URL, CONFIDENCE_THRESHOLD } from './config.js';
+
+export { waitForProducts } from './helpers.js';
+export const BASE_URL: string = PAGE_URL;
+
+// ── Internal metadata attached to every healed-aware locator ────────────────
+const HEAL_META = Symbol('healMeta');
+
+interface HealMeta {
+  selector: string;
+  page:     Page;
+  ctx:      HealingContext;
+}
+
+interface HealingContext {
+  testFilePath: string | null;
+}
+
+// ── Action methods that can time out with a broken locator ───────────────────
+const ACTION_METHODS = new Set([
+  'click', 'dblclick', 'fill', 'type', 'press', 'tap',
+  'check', 'uncheck', 'selectOption', 'hover', 'focus',
+  'dispatchEvent', 'dragTo', 'scrollIntoViewIfNeeded',
+]);
+
+// ── Wrap a locator so action-method TimeoutErrors also trigger healing ────────
+function wrapLocator(locator: Locator, meta: HealMeta): Locator {
+  (locator as any)[HEAL_META] = meta;
+
+  return new Proxy(locator, {
+    get(target, prop: string) {
+      const val = (target as any)[prop];
+
+      if (ACTION_METHODS.has(prop) && typeof val === 'function') {
+        return async (...args: unknown[]) => {
+          try {
+            return await (val as AnyFn).apply(target, args);
+          } catch (err: any) {
+            // Only heal on TimeoutError — not assertion errors or other failures
+            if (!err?.message?.includes('Timeout')) throw err;
+
+            const healed = await attemptHeal(meta);
+            if (!healed) throw err;
+
+            const healedMethod = (healed as any)[prop];
+            if (typeof healedMethod !== 'function') throw err;
+            return await healedMethod.apply(healed, args);
+          }
+        };
+      }
+
+      return typeof val === 'function' ? val.bind(target) : val;
+    },
+  });
+}
+
+// ── Wrapped page: every .locator() call returns a heal-aware locator ─────────
+function wrapPage(page: Page, ctx: HealingContext): Page {
+  return new Proxy(page, {
+    get(target, prop) {
+      if (prop === 'locator') {
+        return (selector: string, options?: Parameters<Page['locator']>[1]) => {
+          const loc = target.locator(selector, options);
+          const meta: HealMeta = { selector, page: target, ctx };
+          return wrapLocator(loc, meta);
+        };
+      }
+      const val = (target as any)[prop];
+      return typeof val === 'function' ? val.bind(target) : val;
+    },
+  });
+}
+
+// ── Core healing logic ───────────────────────────────────────────────────────
+async function attemptHeal(meta: HealMeta): Promise<Locator | null> {
+  const { selector, page, ctx } = meta;
+
+  console.warn(`\n[AutoHeal]   Broken   : ${selector}`);
+  console.warn(`[AutoHeal]    Page    : ${page.url()}`);
+
+  let result: any = null;
+  try {
+    result = await healSelector({
+      url:                 page.url(),
+      brokenSelector:      selector,
+      confidenceThreshold: CONFIDENCE_THRESHOLD,
+    });
+  } catch (e: any) {
+    console.error(`[AutoHeal]  Colab unreachable: ${e.message}`);
+    return null;
+  }
+
+  if (result?.status !== 'healed') {
+    console.warn(`[AutoHeal]   No candidate: ${result?.message ?? result?.status ?? 'unknown'}`);
+    return null;
+  }
+
+  // ── Verify the healed locator actually resolves on the live page ─────────
+  const healedSel = result.healed_selector ?? result.recommended ?? '';
+  const candidate = buildLocator(healedSel, page);
+  const count = await candidate.count();
+  if (count === 0) {
+    console.warn(`[AutoHeal]   Heal candidate found 0 elements on page — skipping patch: ${healedSel}`);
+    saveHealReport(result, { selector, url: page.url(), testFilePath: ctx.testFilePath, verified: false });
+    return null;
+  }
+
+  saveHealReport(result, { selector, url: page.url(), testFilePath: ctx.testFilePath, verified: true });
+
+  if (ctx.testFilePath) {
+    patchTestFile(ctx.testFilePath, selector, healedSel);
+  }
+
+  console.log(`[AutoHeal]   Healed   : ${healedSel}  (score=${(result.confidence ?? result.score)?.toFixed(3)}, elements=${count})`);
+  return candidate;
+}
+
+// ── Build a real Playwright Locator from any Colab-style string ──────────────
+function buildLocator(recommended: string, page: Page): Locator {
+  if (!recommended) return page.locator('body');
+
+  const loc = recommended.match(/[Ll]ocator\(["'](.+?)["']\)/);
+  if (loc) return page.locator(loc[1]);
+
+  const tid = recommended.match(/[Gg]et[_]?[Bb]y[_]?[Tt]est[_]?[Ii]d\(["'](.+?)["']\)/);
+  if (tid) return page.getByTestId(tid[1]);
+
+  const rolePy = recommended.match(/get_by_role\(["'](\w+)["'](?:\s*,\s*name=["']([^"']+)["'])?\)/);
+  if (rolePy) return page.getByRole(rolePy[1] as any, rolePy[2] ? { name: rolePy[2] } : {});
+
+  const roleJs = recommended.match(/getByRole\(["'](\w+)["']/);
+  const nameJs = recommended.match(/name:\s*["']([^"']+)["']/);
+  if (roleJs) return page.getByRole(roleJs[1] as any, nameJs ? { name: nameJs[1] } : {});
+
+  const ph = recommended.match(/[Gg]et[_]?[Bb]y[_]?[Pp]laceholder\(["']([^"']+)["']\)/);
+  if (ph) return page.getByPlaceholder(ph[1]);
+
+  const txt = recommended.match(/[Gg]et[_]?[Bb]y[_]?[Tt]ext\(["']([^"']+)["'](?:,\s*exact=True)?\)/);
+  if (txt) return page.getByText(txt[1], { exact: true });
+
+  const lbl = recommended.match(/[Gg]et[_]?[Bb]y[_]?[Ll]abel\(["']([^"']+)["']\)/);
+  if (lbl) return page.getByLabel(lbl[1]);
+
+  const alt = recommended.match(/[Gg]et[_]?[Bb]y[_]?[Aa]lt[_]?[Tt]ext\(["']([^"']+)["']\)/);
+  if (alt) return page.getByAltText(alt[1]);
+
+  return page.locator(recommended);
+}
+
+// ── Self-healing expect ──────────────────────────────────────────────────────
+//
+// Wraps every assertion method.  On failure, checks whether the subject
+// locator carries HEAL_META.  If it does, heals and retries once.
+//
+// This is the piece the previous version was missing: `expect` failures happen
+// inside Playwright's assertion engine, not inside any Locator method, so a
+// Proxy on the Locator alone cannot intercept them.
+//
+type AnyFn = (...args: any[]) => any;
+
+function wrapAssertions(assertions: any, locator: Locator): any {
+  return new Proxy(assertions, {
+    get(target, prop) {
+      const val = target[prop];
+      if (typeof val !== 'function') return val;
+
+      return async (...args: unknown[]) => {
+        try {
+          return await (val as AnyFn).apply(target, args);
+        } catch (assertErr: any) {
+          // Only attempt healing when we have metadata
+          const meta: HealMeta | undefined = (locator as any)[HEAL_META];
+          if (!meta) throw assertErr;
+
+          const healed = await attemptHeal(meta);
+          if (!healed) throw assertErr;
+
+          // Retry the exact same assertion with the healed locator
+          try {
+            const healedAssertions = baseExpect(healed);
+            return await (healedAssertions as any)[prop](...args);
+          } catch {
+            // Healing didn't fix the assertion either — throw original error
+            throw assertErr;
+          }
+        }
+      };
+    },
+  });
+}
+
+export function expect(value: any, ...rest: any[]): any {
+  const base_ = (baseExpect as any)(value, ...rest);
+
+  // Only wrap Locator subjects — everything else passes through untouched
+  if (
+    value !== null &&
+    typeof value === 'object' &&
+    typeof value.waitFor === 'function'   // duck-type: Locator has waitFor
+  ) {
+    return wrapAssertions(base_, value as Locator);
+  }
+
+  return base_;
+}
+
+// Copy static methods from baseExpect (soft, poll, configure, extend …)
+Object.assign(expect, baseExpect);
+
+// ── Fixture ──────────────────────────────────────────────────────────────────
+export const test = base.extend<{
+  page: Page;
+  _healCtx: HealingContext;
+}>({
+  _healCtx: [
+    async ({}, use, testInfo) => {
+      await use({ testFilePath: testInfo.file ?? null });
+    },
+    { auto: true },
+  ],
+
+  page: async ({ page, _healCtx }, use) => {
+    await use(wrapPage(page, _healCtx));
+  },
+});

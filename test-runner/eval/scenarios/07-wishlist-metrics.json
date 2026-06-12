@@ -1,0 +1,51 @@
+{
+  "scenario": "Wishlist — broken selectors",
+  "url": "https://edd0eb64e9e2ff.lhr.life/arcane-shop.html",
+  "cases": [
+    {
+      "id": "wl-01",
+      "description": "Typo: wishlist-panell → wishlist-panel",
+      "broken_selector": "#wishlist-panell",
+      "baseline_text": "wishlist panel sidebar",
+      "confidence_threshold": 0.30,
+      "has_target": true,
+      "expected": { "id": "wishlist-panel", "tag": "aside" }
+    },
+    {
+      "id": "wl-02",
+      "description": "Typo: wishlist-items-listt → wishlist-items-list",
+      "broken_selector": "#wishlist-items-listt",
+      "baseline_text": "wishlist items list container",
+      "confidence_threshold": 0.30,
+      "has_target": true,
+      "expected": { "id": "wishlist-items-list", "tag": "div" }
+    },
+    {
+      "id": "wl-03",
+      "description": "Typo: wishlist-panell (Move All to Cart button parent)",
+      "broken_selector": "#wishlist-panell",
+      "baseline_text": "wishlist panel move all to cart",
+      "confidence_threshold": 0.30,
+      "has_target": true,
+      "expected": { "id": "wishlist-panel", "tag": "aside" }
+    },
+    {
+      "id": "wl-04",
+      "description": "Typo: wishlist-countt → wishlist-count",
+      "broken_selector": "[data-testid=\"wishlist-countt\"]",
+      "baseline_text": "wishlist item count badge",
+      "confidence_threshold": 0.30,
+      "has_target": true,
+      "expected": { "id": "wishlist-count", "tag": "span" }
+    },
+    {
+      "id": "wl-05",
+      "description": "Sélecteur inexistant — pipeline doit refuser",
+      "broken_selector": "#this-wishlist-element-does-not-exist-xyz999",
+      "baseline_text": "nonexistent wishlist element",
+      "confidence_threshold": 0.30,
+      "has_target": false,
+      "expected": null
+    }
+  ]
+}

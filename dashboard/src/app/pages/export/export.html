@@ -1,0 +1,63 @@
+<div class="page anim-fade">
+  <div class="page-hdr">
+    <h2 class="page-title">Export Results</h2>
+    <p class="page-desc" *ngIf="data">{{ data.lastRunDetails.totalCandidates }} candidates · {{ data.lastRunDetails.locators.length }} locators processed</p>
+  </div>
+
+  <div class="export-grid stagger" *ngIf="data">
+    <div class="export-card anim-slide" (click)="downloadJSON('full', data, 'full-report.json')">
+      <div class="export-icon" style="background:rgba(124,106,247,0.12);color:var(--accent)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div class="export-info"><div class="export-name">Full Report</div><div class="export-desc">Complete /dashboard-data snapshot</div></div>
+      <span class="export-fmt">JSON</span>
+    </div>
+
+    <div class="export-card anim-slide" (click)="downloadCSV()">
+      <div class="export-icon" style="background:rgba(62,207,142,0.12);color:var(--green)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+      </div>
+      <div class="export-info"><div class="export-name">Score Matrix</div><div class="export-desc">{{ data.lastRunDetails.candidates.length }} candidates x all stages</div></div>
+      <span class="export-fmt">CSV</span>
+    </div>
+
+    <div class="export-card anim-slide" (click)="downloadJSON('trace', data.lastRunDetails, 'pipeline-trace.json')">
+      <div class="export-icon" style="background:rgba(245,158,11,0.12);color:var(--amber)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="12 8 12 12 14 14"/><path d="M3.05 11a9 9 0 1 0 .5-4.5"/><polyline points="3 3 3 7 7 7"/></svg>
+      </div>
+      <div class="export-info"><div class="export-name">Pipeline Trace</div><div class="export-desc">Last run full details + logs</div></div>
+      <span class="export-fmt">JSON</span>
+    </div>
+
+    <div class="export-card anim-slide" (click)="downloadPlaywrightPatch()">
+      <div class="export-icon" style="background:rgba(56,189,248,0.12);color:var(--blue)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+      </div>
+      <div class="export-info"><div class="export-name">Playwright Patch</div><div class="export-desc">{{ data.lastRunDetails.locators.filter(l => l.status === 'healed').length }} healed locators as .ts</div></div>
+      <span class="export-fmt">TS</span>
+    </div>
+  </div>
+
+  <div class="card anim-slide" *ngIf="data">
+    <div class="card-header"><span class="card-title">Quick Copy</span></div>
+    <div class="snippet-list">
+      <div class="snippet-item">
+        <div class="snip-label">Winner Locator</div>
+        <div class="snip-code" (click)="copyText($event, 'await page.locator(\'' + winnerLocator + '\').click();', 'pw')">await page.locator('{{ winnerLocator }}').click();<span class="snip-badge" *ngIf="copied === 'pw'">Copied</span></div>
+      </div>
+      <div class="snippet-item">
+        <div class="snip-label">Confidence JSON</div>
+        <div class="snip-code" (click)="copyConfidence($event)">{{ '{' }} "locator": "{{ winnerLocator }}", "confidence": {{ winnerScore | number:'1.3-3' }} {{ '}' }}<span class="snip-badge" *ngIf="copied === 'conf'">Copied</span></div>
+      </div>
+      <div class="snippet-item">
+        <div class="snip-label">API Endpoint</div>
+        <div class="snip-code" (click)="copyApi($event)">POST /heal  {{ '{' }} "url": "...", "broken_selector": "..." {{ '}' }}<span class="snip-badge" *ngIf="copied === 'api'">Copied</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="!data">
+    <div class="spinner"></div>
+    <div>Waiting for run data...</div>
+  </div>
+</div>

@@ -1,0 +1,145 @@
+<div class="setup-banner anim-slide" *ngIf="!hasUrl">
+  <div class="setup-banner-icon">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><circle cx="12" cy="8" r="0.5" fill="currentColor"/></svg>
+  </div>
+  <div class="setup-banner-body">
+    <strong>Connect your ARCANE server</strong>
+    <span>Paste the Cloudflare tunnel URL from your Colab output to see live data.</span>
+    <div class="setup-banner-row">
+      <input type="url" class="text-input" [(ngModel)]="inlineUrl" placeholder="https://xxxx-xxxx.trycloudflare.com" (keyup.enter)="saveUrl()" style="flex:1;min-width:240px"/>
+      <button class="btn btn-primary" (click)="saveUrl()">Connect</button>
+      <span class="setup-banner-saved" *ngIf="urlSaved">Connected!</span>
+    </div>
+    <span class="setup-hint">No trailing slash · No /dashboard-data · Saved in localStorage</span>
+  </div>
+</div>
+
+<div class="page anim-fade" *ngIf="!loading && data">
+  <div class="kpi-grid stagger">
+    <app-stat-card label="Total Candidates" [value]="data.lastRunDetails.totalCandidates" [sub]="data.stats.total_attempts + ' total attempts'" subClass="neutral" accent="var(--accent)"></app-stat-card>
+    <app-stat-card label="Best Score" [value]="(data.lastRunDetails.bestScore | number:'1.3-3') ?? '—'" [sub]="'Gap: ' + (data.lastRunDetails.confidenceGap | number:'1.3-3')" [subClass]="data.lastRunDetails.bestScore >= 0.8 ? 'up' : 'down'" accent="var(--green)"></app-stat-card>
+    <app-stat-card label="Heal Rate" [value]="healRate + '%'" [sub]="data.stats.typo_fixes + ' typo · ' + data.stats.ml_fixes + ' ML · ' + data.stats.failed_heals + ' failed'" subClass="neutral" accent="var(--amber)"></app-stat-card>
+    <app-stat-card label="Pipeline Time" [value]="(data.lastRunDetails.pipelineTimeSeconds | number:'1.2-2') + 's'" [sub]="data.lastRunDetails.funnel.length + ' stages'" subClass="neutral" accent="var(--blue)"></app-stat-card>
+  </div>
+
+  <div class="section-grid">
+    <div class="card anim-slide">
+      <div class="card-header">
+        <span class="card-title">Pipeline Stages</span>
+        <span class="card-sub">{{ data.lastRunDetails.funnel.map(f => f.name).join(' → ') }}</span>
+      </div>
+      <div class="pipeline-flow stagger">
+        <ng-container *ngFor="let stage of funnelStages; let i = index; let last = last">
+          <div class="stage-node">
+            <div class="stage-circle" [style]="'--hue:' + (i * 60)"> {{ i + 1 }} </div>
+            <div class="stage-name">{{ stage.name }}</div>
+            <div class="stage-count">{{ stage.count }}</div>
+            <div class="stage-pct">{{ stage.pct }}%</div>
+          </div>
+          <div class="stage-arrow" *ngIf="!last">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        </ng-container>
+      </div>
+      <div class="stage-timings" *ngIf="data.lastRunDetails.stageTimings.length">
+        <div class="timing-header">Stage timings</div>
+        <div class="timing-bars">
+          <div class="timing-col" *ngFor="let t of data.lastRunDetails.stageTimings; let i = index">
+            <div class="timing-bar-fill" [style.height.%]="(t / (data.lastRunDetails.pipelineTimeSeconds || 1)) * 80 + 20" [title]="funnelStages[i]?.name + ': ' + (t | number:'1.2-2') + 's'"></div>
+            <div class="timing-val">{{ t | number:'1.1-1' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card anim-slide">
+      <div class="card-header">
+        <span class="card-title">Score Distribution</span>
+        <span class="card-sub">{{ data.lastRunDetails.totalCandidates }} candidates</span>
+      </div>
+      <div class="card-body" *ngIf="scoreBars.length; else noScores">
+        <div class="bar-row" *ngFor="let b of scoreBars">
+          <span class="bar-label">{{ b.range }}</span>
+          <div class="bar-track"><div class="bar-fill" [style.width.%]="b.pct" [style.background]="b.color"><span class="bar-val">{{ b.count }}</span></div></div>
+        </div>
+      </div>
+      <ng-template #noScores><div class="empty-state">No run data yet</div></ng-template>
+    </div>
+  </div>
+
+  <div class="section-grid">
+    <div class="card anim-slide">
+      <div class="card-header">
+        <span class="card-title">Top Candidates</span>
+        <span class="card-sub" *ngIf="data.lastRunDetails.winner['id']">Winner: {{ data.lastRunDetails.winner['id'] }}</span>
+      </div>
+      <div class="table-wrap" *ngIf="topCandidates.length; else noCands">
+        <table>
+          <thead><tr><th>#</th><th>Locator</th><th>Type</th><th>Score</th><th>Stability</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let c of topCandidates; let i = index" [class]="i === 0 ? 'winner-row' : ''">
+              <td><span class="rank" [class]="'rank--' + (i < 3 ? (i+1) : 'n')">{{ i + 1 }}</span></td>
+              <td style="font-family:var(--mono);font-size:11px;color:var(--text-primary);">{{ c.id }}</td>
+              <td><span class="tag" [class]="'tag--' + (c.locatorType === 'ID' ? 'blue' : c.locatorType === 'Attr' ? 'amber' : c.locatorType === 'Class' ? 'blue' : 'purple')">{{ c.locatorType }}</span></td>
+              <td><app-score-bar [value]="c.blendedScore" [color]="scoreColor(c.blendedScore)"></app-score-bar></td>
+              <td><span class="tag" [class]="'tag--' + (c.stability === 'high' ? 'green' : c.stability === 'medium' ? 'purple' : 'red')">{{ c.stability }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-template #noCands><div class="empty-state">Run the pipeline to see candidates</div></ng-template>
+    </div>
+
+    <div class="card anim-slide">
+      <div class="card-header">
+        <span class="card-title">Confidence</span>
+        <span class="card-sub">Fused score</span>
+      </div>
+      <div class="card-body">
+        <div class="gauge-section">
+          <svg class="gauge-svg" width="140" height="90" viewBox="0 0 140 90">
+            <path d="M 15 80 A 55 55 0 0 1 125 80" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="12" stroke-linecap="round"/>
+            <path d="M 15 80 A 55 55 0 0 1 125 80" fill="none" stroke="var(--green)" stroke-width="12" stroke-linecap="round" stroke-dasharray="172.8" [attr.stroke-dashoffset]="gaugeOffset" class="gauge-arc"/>
+          </svg>
+          <div class="gauge-info">
+            <div class="gauge-score">{{ data.lastRunDetails.bestScore | number:'1.3-3' }}</div>
+            <div class="gauge-label">Fused confidence</div>
+            <div class="gauge-verdict" [class]="verdictClass">{{ verdict }}</div>
+          </div>
+        </div>
+        <div style="margin-top:20px;display:flex;flex-direction:column;gap:8px" *ngIf="signalScores.length">
+          <div class="bar-row" *ngFor="let s of signalScores">
+            <span class="bar-label" style="width:90px;font-size:10px;">{{ s.name }}</span>
+            <div class="bar-track"><div class="bar-fill" [style.width.%]="s.score * 100" [style.background]="s.color"><span class="bar-val">{{ s.score | number:'1.3-3' }}</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card anim-slide" *ngIf="data.history.length">
+    <div class="card-header">
+      <span class="card-title">Recent Runs</span>
+      <span class="card-sub">Last {{ data.history.length }} heal attempts</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Time</th><th>Broken</th><th>Healed</th><th>Confidence</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let h of data.history">
+            <td style="font-size:10px;color:var(--text-tertiary);">{{ h.ts | date:'HH:mm:ss' }}</td>
+            <td style="font-family:var(--mono);font-size:10px;color:var(--red);">{{ h.brokenSelector }}</td>
+            <td style="font-family:var(--mono);font-size:10px;color:var(--green);">{{ h.healedSelector || '—' }}</td>
+            <td><app-score-bar [value]="h.confidence" [color]="scoreColor(h.confidence)"></app-score-bar></td>
+            <td><span class="tag" [class]="'tag--' + (h.status === 'healed' ? 'green' : 'red')">{{ h.status }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="loading-state" *ngIf="loading">
+  <div class="spinner"></div>
+  <div>Connecting to pipeline...</div>
+</div>

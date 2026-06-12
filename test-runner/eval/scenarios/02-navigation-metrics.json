@@ -1,0 +1,51 @@
+{
+  "scenario": "Navigation — broken selectors",
+  "url": "https://edd0eb64e9e2ff.lhr.life/arcane-shop.html",
+  "cases": [
+    {
+      "id": "nav-01",
+      "description": "Typo: tab-new-arrival → tab-new-arrivals",
+      "broken_selector": "[data-testid=\"tab-new-arrival\"]",
+      "baseline_text": "new arrivals tab button",
+      "confidence_threshold": 0.30,
+      "has_target": true,
+      "expected": { "id": "tab-new-arrivals", "tag": "button" }
+    },
+    {
+      "id": "nav-02",
+      "description": "Typo: nav-abut → nav-about",
+      "broken_selector": "[data-testid=\"nav-abut\"]",
+      "baseline_text": "about navigation link",
+      "confidence_threshold": 0.30,
+      "has_target": true,
+      "expected": { "id": "nav-about", "tag": "a" }
+    },
+    {
+      "id": "nav-03",
+      "description": "Typo: checkout-pg → checkout-page",
+      "broken_selector": "[data-testid=\"checkout-pg\"]",
+      "baseline_text": "checkout page div",
+      "confidence_threshold": 0.30,
+      "has_target": true,
+      "expected": { "id": "checkout-page", "tag": "div" }
+    },  
+    {
+      "id": "nav-04",
+      "description": "Typo: tab-featuredd → tab-featured",
+      "broken_selector": "[data-testid=\"tab-featuredd\"]",
+      "baseline_text": "featured tab button",
+      "confidence_threshold": 0.30,
+      "has_target": true,
+      "expected": { "id": "tab-featured", "tag": "button" }
+    },
+    {
+      "id": "nav-05",
+      "description": "Sélecteur inexistant — pipeline doit refuser",
+      "broken_selector": "#this-nav-element-does-not-exist-abc999",
+      "baseline_text": "nonexistent navigation element",
+      "confidence_threshold": 0.30,
+      "has_target": false,
+      "expected": null
+    }
+  ]
+}

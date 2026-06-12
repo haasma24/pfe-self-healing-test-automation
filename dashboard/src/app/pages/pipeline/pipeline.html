@@ -1,0 +1,70 @@
+<div class="page anim-fade" *ngIf="!loading && data">
+  <div class="pipe-summary stagger">
+    <div class="pipe-kpi"><div class="pipe-val">{{ data.lastRunDetails.totalCandidates }}</div><div class="pipe-label">Candidates in</div></div>
+    <div class="pipe-kpi"><div class="pipe-val">{{ data.lastRunDetails.funnel.length }}</div><div class="pipe-label">Stages</div></div>
+    <div class="pipe-kpi"><div class="pipe-val">{{ data.lastRunDetails.pipelineTimeSeconds | number:'1.2-2' }}s</div><div class="pipe-label">Total time</div></div>
+    <div class="pipe-kpi"><div class="pipe-val">{{ data.lastRunDetails.bestScore | number:'1.3-3' }}</div><div class="pipe-label">Best score</div></div>
+    <div class="pipe-kpi"><div class="pipe-val">{{ data.lastRunDetails.confidenceGap | number:'1.3-3' }}</div><div class="pipe-label">Gap</div></div>
+  </div>
+
+  <div class="section-grid">
+    <div class="card anim-slide">
+      <div class="card-header"><span class="card-title">Funnel Breakdown</span><span class="card-sub">Candidates per stage</span></div>
+      <div class="funnel-list">
+        <div class="funnel-row" *ngFor="let f of funnel; let i = index">
+          <span class="funnel-num">{{ i + 1 }}</span>
+          <span class="funnel-name">{{ f.name }}</span>
+          <div class="funnel-bar"><div class="funnel-fill" [style.width.%]="f.pct" [style.background]="['var(--accent)','var(--green)','var(--amber)','var(--blue)'][i]"></div></div>
+          <span class="funnel-count">{{ f.count }}</span>
+          <span class="funnel-pct">{{ f.pct }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card anim-slide">
+      <div class="card-header"><span class="card-title">Stage Timings</span><span class="card-sub">Time per stage</span></div>
+      <div class="timing-chart" *ngIf="stageTimings.length; else noTimings">
+        <div class="timing-bar-wrap" *ngFor="let t of stageTimings">
+          <div class="timing-fill" [style.height.%]="t.pct + 20" [style.background]="['var(--accent)','var(--green)','var(--amber)','var(--blue)'][stageTimings.indexOf(t)]"></div>
+          <span class="timing-name">{{ t.name }}</span>
+          <span class="timing-time">{{ t.time | number:'1.2-2' }}s</span>
+        </div>
+      </div>
+      <ng-template #noTimings><div class="empty-state">No timing data available</div></ng-template>
+    </div>
+  </div>
+
+  <div class="card anim-slide" *ngIf="candidates.length">
+    <div class="card-header"><span class="card-title">All Candidates</span><span class="card-sub">{{ candidates.length }} ranked by blended score</span></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>ID</th><th>Tag</th><th>Blended</th><th>Semantic</th><th>Contextual</th><th>TF-IDF</th><th>SSIM</th><th>Type</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let c of candidates; let i = index" [class]="i === 0 ? 'winner-row' : ''">
+            <td><span class="rank" [class]="'rank--' + (i < 3 ? (i+1) : 'n')">{{ c.rank }}</span></td>
+            <td style="font-family:var(--mono);font-size:10px;color:var(--text-primary);max-width:160px;overflow:hidden;text-overflow:ellipsis;" [title]="c.id">{{ c.id }}</td>
+            <td style="font-family:var(--mono);font-size:10px;color:var(--text-tertiary);">{{ c.tag }}</td>
+            <td><app-score-bar [value]="c.blendedScore" [color]="scoreColor(c.blendedScore)"></app-score-bar></td>
+            <td><app-score-bar [value]="c.semanticScore" [color]="scoreColor(c.semanticScore)"></app-score-bar></td>
+            <td><app-score-bar [value]="c.contextualScore" [color]="scoreColor(c.contextualScore)"></app-score-bar></td>
+            <td><app-score-bar [value]="c.tfidfScore" [color]="scoreColor(c.tfidfScore)"></app-score-bar></td>
+            <td><app-score-bar [value]="c.ssimScore" [color]="scoreColor(c.ssimScore)"></app-score-bar></td>
+            <td><span class="tag" [class]="'tag--' + (c.locatorType === 'ID' ? 'blue' : c.locatorType === 'Attr' ? 'amber' : 'purple')">{{ c.locatorType }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card anim-slide" *ngIf="logs.length">
+    <div class="card-header"><span class="card-title">Pipeline Logs</span><button class="btn btn-ghost" (click)="showLogs = !showLogs" style="padding:4px 10px;font-size:10px">{{ showLogs ? 'Hide' : 'Show' }}</button></div>
+    <div class="log-console" *ngIf="showLogs">
+      <div class="log-line" *ngFor="let line of logs; trackBy: trackByIndex">{{ line }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="loading-state" *ngIf="loading">
+  <div class="spinner"></div>
+  <div>Loading pipeline data...</div>
+</div>

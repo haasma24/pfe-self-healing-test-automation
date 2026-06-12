@@ -1,0 +1,35 @@
+<div class="page anim-fade">
+  <div class="card anim-slide">
+    <div class="card-header"><span class="card-title">Connection Settings</span><span class="card-sub">Persisted in localStorage</span></div>
+    <div class="card-body config-form">
+      <div class="input-group">
+        <label>API Base URL</label>
+        <div class="input-row"><input type="url" [(ngModel)]="apiUrl" class="text-input" placeholder="https://your-tunnel.trycloudflare.com" /><button class="btn btn-outline" (click)="ping()" style="padding:8px 14px">Ping</button></div>
+        <span class="hint">The Cloudflare / ngrok tunnel URL — no trailing slash, no /dashboard-data</span>
+      </div>
+      <div class="input-group">
+        <label>Poll interval (ms)</label>
+        <input type="number" [(ngModel)]="pollInterval" class="text-input" style="max-width:140px" min="1000" max="30000" step="500" />
+        <span class="hint">How often the dashboard auto-refreshes (min 1000 ms)</span>
+      </div>
+      <div class="form-footer">
+        <button class="btn btn-primary" (click)="save()">Save & Apply</button>
+        <span class="save-msg" *ngIf="saved" style="font-size:12px;color:var(--green);font-weight:600">Saved</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-grid">
+    <div class="card anim-slide" *ngFor="let section of sections">
+      <div class="card-header"><span class="card-title">{{ section.title }}</span></div>
+      <div class="config-rows">
+        <div class="config-row" *ngFor="let row of section.rows">
+          <span class="cfg-key">{{ row.key }}</span>
+          <span *ngIf="row.type === 'val'" class="cfg-val">{{ row.value }}</span>
+          <span *ngIf="row.type === 'badge-on'" class="cfg-badge cfg-badge--on">ON</span>
+          <span *ngIf="row.type === 'badge-off'" class="cfg-badge cfg-badge--off">OFF</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

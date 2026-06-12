@@ -1,0 +1,78 @@
+{
+  "scenario": "Page Structure — broken ID selectors",
+  "url": "https://edd0eb64e9e2ff.lhr.life/arcane-shop.html",
+  "cases": [
+    {
+      "id": "ps-01",
+      "description": "Typo: promo-barr → promo-bar",
+      "broken_selector": "#promo-barr",
+      "baseline_text": "promo bar an!nouncement",
+      "confidence_threshold": 0.30,
+      "has_target": true,
+      "expected": { "id": "promo-bar", "tag": "div" }
+    },
+    {
+      "id": "ps-02",
+      "description": "Typo: nav-hom → nav-home",
+      "broken_selector": "#nav-hom",
+      "baseline_text": "navigation home link",
+      "confidence_threshold": 0.30,
+      "has_target": true,
+      "expected": { "id": "nav-home", "tag": "a" }
+    },
+    {
+      "id": "ps-03",
+      "description": "Typo: logoo → logo",
+      "broken_selector": "#logoo",
+      "baseline_text": "site logo",
+      "confidence_threshold": 0.30,
+      "has_target": true,
+      "expected": { "id": "logo", "tag": "div" }
+    },
+    {
+      "id": "ps-04",
+      "description": "Typo: btn-searchh → btn-search",
+      "broken_selector": "#btn-searchh",
+      "baseline_text": "search button",
+      "confidence_threshold": 0.30,
+      "has_target": true,
+      "expected": { "id": "btn-search", "tag": "button" }
+    },
+    {
+      "id": "ps-05",
+      "description": "Typo: btn-wish-list-nav → btn-wishlist-nav",
+      "broken_selector": "#btn-wish-list-nav",
+      "baseline_text": "wishlist navigation button",
+      "confidence_threshold": 0.30,
+      "has_target": true,
+      "expected": { "id": "btn-wishlist-nav", "tag": "button" }
+    },
+    {
+      "id": "ps-06",
+      "description": "Typo: newsletter-emai → newsletter-email",
+      "broken_selector": "#newsletter-emai",
+      "baseline_text": "newsletter email input",
+      "confidence_threshold": 0.30,
+      "has_target": true,
+      "expected": { "id": "newsletter-email", "tag": "input" }
+    },
+    {
+      "id": "ps-07",
+      "description": "Typo: cart-countt → cart-count",
+      "broken_selector": "#cart-countt",
+      "baseline_text": "cart item count badge",
+      "confidence_threshold": 0.30,
+      "has_target": true,
+      "expected": { "id": "cart-count", "tag": "span" }
+    },
+    {
+      "id": "ps-08",
+      "description": "Sélecteur inexistant — pipeline doit refuser",
+      "broken_selector": "#this-element-does-not-exist-xyz123",
+      "baseline_text": "nonexistent element",
+      "confidence_threshold": 0.30,
+      "has_target": false,
+      "expected": null
+    }
+  ]
+}

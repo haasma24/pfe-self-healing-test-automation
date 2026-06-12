@@ -1,0 +1,70 @@
+.page { padding: 4px 0; display: flex; flex-direction: column; gap: 20px; }
+
+.config-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.hint {
+  font-size: 10px;
+  color: var(--text-tertiary);
+}
+
+.form-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.config-rows {
+  padding: 4px 0;
+}
+
+.config-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 18px;
+  border-bottom: 1px solid var(--border);
+  &:last-child { border-bottom: none; }
+}
+
+.cfg-key {
+  color: var(--text-secondary);
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.cfg-val {
+  color: var(--text);
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.cfg-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  &--on { background: var(--emerald-bg); color: var(--emerald); }
+  &--off { background: var(--rose-bg); color: var(--rose); }
+}
+
+@media (max-width: 768px) {
+  .config-grid { grid-template-columns: 1fr; }
+  .page { padding: 0; }
+}

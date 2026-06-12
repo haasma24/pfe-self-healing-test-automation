@@ -1,0 +1,42 @@
+{
+  "scenario": "Hero & Banners — broken selectors",
+  "url": "https://edd0eb64e9e2ff.lhr.life/arcane-shop.html",
+  "cases": [
+    {
+      "id": "hb-01",
+      "description": "Typo: hero-secton → hero-section",
+      "broken_selector": "[data-testid=\"hero-secton\"]",
+      "baseline_text": "hero section",
+      "confidence_threshold": 0.30,
+      "has_target": true,
+      "expected": { "id": "hero-section", "tag": "section" }
+    },
+    {
+      "id": "hb-02",
+      "description": "Typo: btn-gost → btn-ghost (hero lookbook button)",
+      "broken_selector": "#hero-section .btn-gost",
+      "baseline_text": "hero lookbook ghost button",
+      "confidence_threshold": 0.30,
+      "has_target": true,
+      "expected": { "tag": "button", "text_contains": "lookbook" }
+    },
+    {
+      "id": "hb-03",
+      "description": "Typo: featured-bannerr → featured-banner",
+      "broken_selector": "[data-testid=\"featured-bannerr\"]",
+      "baseline_text": "featured sale banner",
+      "confidence_threshold": 0.30,
+      "has_target": true,
+      "expected": { "id": "featured-banner", "tag": "div" }
+    },
+    {
+      "id": "hb-04",
+      "description": "Sélecteur inexistant — pipeline doit refuser",
+      "broken_selector": "#this-hero-element-does-not-exist-xyz999",
+      "baseline_text": "nonexistent hero element",
+      "confidence_threshold": 0.30,
+      "has_target": false,
+      "expected": null
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "self-healing-playwright",
+  "version": "2.0.0",
+  "type": "module",
+  "description": "Playwright tests with transparent AI self-healing via Colab API",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:ui": "npx playwright test --ui",
+    "report": "npx playwright show-report",
+    "serve": "npx serve ../page -p 8080",
+    "ping": "node scripts/ping-colab.js",
+    "heal": "node scripts/heal-test.js",
+    "eval": "node scripts/run-eval.js",
+    "capture-gt": "node scripts/capture-gt.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.6.0"
+  }
+}

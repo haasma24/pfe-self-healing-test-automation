@@ -1,0 +1,60 @@
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 32 32" fill="none">
+        <rect x="2" y="2" width="28" height="28" rx="8" stroke="currentColor" stroke-width="2"/>
+        <path d="M10 16l4 4 8-8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="brand-text">
+      <span class="brand-name">ARCANE</span>
+      <span class="brand-sub">Self-Healing Engine</span>
+    </div>
+  </div>
+
+  <nav class="nav-section">
+    <span class="nav-section-label">Dashboard</span>
+    <a class="nav-item" routerLink="/overview" routerLinkActive="active" #rla1="routerLinkActive">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span>Overview</span>
+    </a>
+    <a class="nav-item" routerLink="/pipeline" routerLinkActive="active">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span>Pipeline</span>
+      <span class="nav-badge" *ngIf="stageCount > 0">{{ stageCount }}</span>
+    </a>
+    <a class="nav-item" routerLink="/broken-locators" routerLinkActive="active">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Locators</span>
+      <span class="nav-badge nav-badge--danger" *ngIf="failedCount > 0">{{ failedCount }}</span>
+    </a>
+    <a class="nav-item" routerLink="/history" routerLinkActive="active">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="12 8 12 12 14 14"/><path d="M3.05 11a9 9 0 1 0 .5-4.5"/><polyline points="3 3 3 7 7 7"/></svg>
+      <span>History</span>
+      <span class="nav-badge" *ngIf="totalRuns > 0">{{ totalRuns }}</span>
+    </a>
+  </nav>
+
+  <nav class="nav-section">
+    <span class="nav-section-label">Tools</span>
+    <a class="nav-item" routerLink="/upload" routerLinkActive="active">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span>Load Run</span>
+    </a>
+    <a class="nav-item" routerLink="/configuration" routerLinkActive="active">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      <span>Configuration</span>
+    </a>
+    <a class="nav-item" routerLink="/export" routerLinkActive="active">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span>Export</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="status" [class.status--offline]="!statusOnline">
+      <span class="status-dot"></span>
+      <span class="status-label">{{ statusLabel }}</span>
+    </div>
+  </div>
+</aside>

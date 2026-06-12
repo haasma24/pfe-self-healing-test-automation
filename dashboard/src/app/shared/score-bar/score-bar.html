@@ -1,0 +1,6 @@
+<div class="score-bar">
+  <div class="score-track">
+    <div class="score-fill" [style.width.%]="value * 100" [style.background]="color"></div>
+  </div>
+  <span class="score-label">{{ value | number:'1.3-3' }}</span>
+</div>

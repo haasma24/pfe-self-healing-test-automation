@@ -1,0 +1,33 @@
+<div class="page anim-fade">
+  <div class="page-header">
+    <h2 class="page-title">Broken Locators</h2>
+    <div class="filter-tabs" *ngIf="!loading">
+      <button [class.active]="filter === 'all'" (click)="filter = 'all'">All ({{ locators.length }})</button>
+      <button [class.active]="filter === 'healed'" (click)="filter = 'healed'">Healed ({{ healedCount }})</button>
+      <button [class.active]="filter === 'failed'" (click)="filter = 'failed'">Failed ({{ failedCount }})</button>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <div>Loading locators...</div>
+  </div>
+
+  <div class="card anim-slide" *ngIf="!loading">
+    <div class="table-wrap" *ngIf="filteredLocators.length > 0; else empty">
+      <table>
+        <thead><tr><th>Status</th><th>Test</th><th>Broken</th><th>Healed</th><th>Score</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let loc of filteredLocators">
+            <td><span class="tag" [class]="'tag--' + (loc.status === 'healed' ? 'green' : 'red')">{{ loc.status === 'healed' ? 'healed' : 'failed' }}</span></td>
+            <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-primary)">{{ loc.testName }}</td>
+            <td class="loc-cell broken" (click)="copy($event, loc.brokenLocator)" [title]="loc.brokenLocator">{{ loc.brokenLocator }}</td>
+            <td class="loc-cell healed" (click)="copy($event, loc.healedLocator)" [title]="loc.healedLocator">{{ loc.healedLocator || '—' }}</td>
+            <td class="loc-score">{{ loc.confidence != null ? (loc.confidence | number:'1.2-2') : '—' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <ng-template #empty><div class="empty-state">No locators match the current filter.</div></ng-template>
+  </div>
+</div>
