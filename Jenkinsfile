@@ -92,6 +92,14 @@ pipeline {
             }
         }
 
+        stage('Install Playwright Browsers') {
+            steps {
+                dir('test-runner') {
+                    bat 'npx playwright install chromium'
+                }
+            }
+        }
+
         stage('Run Playwright Tests') {
             environment {
                 COLAB_API_URL = "${COLAB_API_URL}"
@@ -100,7 +108,7 @@ pipeline {
             }
             steps {
                 dir('test-runner') {
-                    bat 'npx playwright test --reporter=html,json'
+                    bat 'npx playwright test --reporter=html,json,junit'
                 }
             }
             post {
