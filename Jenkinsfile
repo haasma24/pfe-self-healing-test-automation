@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    tools {
-        nodejs 'NodeJS'   // must match a NodeJS tool in Jenkins global config
-    }
-
     environment {
         PAGE_URL = credentials('PAGE_URL')     // URL of the shop page (localhost.run)
         COLAB_API_URL = credentials('COLAB_API_URL') // URL of the Colab backend (ngrok)
