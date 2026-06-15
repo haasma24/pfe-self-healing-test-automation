@@ -31,6 +31,21 @@ pipeline {
             }
         }
 
+        stage('Update Test URLs') {
+            steps {
+                dir('test-runner') {
+                    powershell """
+                        \$urls = Get-Content '${env.URLS_FILE}' -Raw | ConvertFrom-Json
+                        @"
+        COLAB_API_URL=\$(\$urls.api_url)
+        PAGE_URL=\$(\$urls.page_url)/arcane-shop.html
+        CONFIDENCE_THRESHOLD=${env.CONFIDENCE_THRESHOLD}
+"@ | Set-Content .env.healing -Encoding UTF8
+                    """
+                }
+            }
+        }
+
         stage('Verify Colab API') {
             steps {
                 script {
