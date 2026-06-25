@@ -32,9 +32,9 @@ function cleanUrl(raw) {
   return m ? m[0].replace(/\/$/, '') : raw.trim();
 }
 
-export const COLAB_API_URL        = cleanUrl(env.COLAB_API_URL        || process.env.COLAB_API_URL        || '');
-export const PAGE_URL             = cleanUrl(env.PAGE_URL             || process.env.PAGE_URL             || 'https://0db08412a5d665.lhr.life/arcane-shop.html');
-export const CONFIDENCE_THRESHOLD = parseFloat(env.CONFIDENCE_THRESHOLD || process.env.CONFIDENCE_THRESHOLD || '0.45');
+export const COLAB_API_URL        = cleanUrl(process.env.COLAB_API_URL        || env.COLAB_API_URL        || '');
+export const PAGE_URL             = cleanUrl(process.env.PAGE_URL             || env.PAGE_URL             || 'https://0db08412a5d665.lhr.life/arcane-shop.html');
+export const CONFIDENCE_THRESHOLD = parseFloat(process.env.CONFIDENCE_THRESHOLD || env.CONFIDENCE_THRESHOLD || '0.45');
 export const REQUEST_TIMEOUT_MS   = 180_000;
 
 export default { COLAB_API_URL, PAGE_URL, CONFIDENCE_THRESHOLD, REQUEST_TIMEOUT_MS };
