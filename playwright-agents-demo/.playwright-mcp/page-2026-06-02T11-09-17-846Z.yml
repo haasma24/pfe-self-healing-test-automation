@@ -1,0 +1,32 @@
+- generic [ref=e1]:
+  - complementary [ref=e2]:
+    - generic [ref=e3]:
+      - heading "JavaScript ES6" [level=3] [ref=e4]
+      - generic [ref=e5]:
+        - heading "Example" [level=5] [ref=e6]
+        - link "Source" [ref=e7] [cursor=pointer]:
+          - /url: https://github.com/tastejs/todomvc/tree/gh-pages/examples/javascript-es6
+    - separator [ref=e8]
+    - blockquote [ref=e9]:
+      - paragraph [ref=e10]: “ The ECMAScript 6 (ES2015) standard was ratified in 2015 following years of work standardizing improvements to ECMAScript 3. The committee introduced a wide variety of improvements such as arrow functions, const declarations, and native Promises. ”
+      - link "JavaScript ES6" [ref=e12] [cursor=pointer]:
+        - /url: http://developer.mozilla.org/en-US/docs/JavaScript
+    - generic [ref=e13]:
+      - separator [ref=e14]
+      - emphasis [ref=e15]:
+        - text: If you have other helpful links to share, or find any of the links above no longer work, please
+        - link "let us know" [ref=e16] [cursor=pointer]:
+          - /url: https://github.com/tastejs/todomvc/issues
+        - text: .
+  - generic [ref=e17]:
+    - generic [ref=e18]:
+      - heading "todos" [level=1] [ref=e19]
+      - textbox "What needs to be done?" [active] [ref=e20]
+    - text: ❯
+  - contentinfo [ref=e21]:
+    - paragraph [ref=e22]: Double-click to edit a todo
+    - paragraph [ref=e23]: Created by the TodoMVC Team
+    - paragraph [ref=e24]:
+      - text: Part of
+      - link "TodoMVC" [ref=e25] [cursor=pointer]:
+        - /url: http://todomvc.com

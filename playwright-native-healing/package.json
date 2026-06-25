@@ -1,0 +1,16 @@
+{
+  "name": "playwright-native-healing",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Playwright tests using native resilient selectors (getByRole, getByText, getByTestId) — preventive self-healing via semantic locators",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:ui": "npx playwright test --ui",
+    "report": "npx playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.6.0"
+  }
+}
