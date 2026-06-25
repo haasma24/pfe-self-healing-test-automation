@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter, Subscription } from 'rxjs';
@@ -23,6 +23,8 @@ const ROUTE_META: Record<string, { title: string; crumb: string }> = {
 })
 export class Topbar implements OnInit, OnDestroy {
 
+  @Output() toggleSidebar = new EventEmitter<void>();
+
   title = 'Overview';
   crumb = 'Dashboard';
 
@@ -35,18 +37,12 @@ export class Topbar implements OnInit, OnDestroy {
   constructor(private router: Router, private dash: DashboardService) {}
 
   ngOnInit(): void {
-    // Route tracking
-    const url = this.router.url;
-    const m = ROUTE_META[url] ?? { title: 'Overview', crumb: 'Dashboard' };
-    this.title = m.title;
-    this.crumb = m.crumb;
+    this.updateRouteMeta(this.router.url);
 
     this.subs.push(
       this.router.events.pipe(filter(e => e instanceof NavigationEnd))
         .subscribe((e: any) => {
-          const meta = ROUTE_META[e.urlAfterRedirects] ?? { title: 'ARCANE', crumb: '' };
-          this.title = meta.title;
-          this.crumb = meta.crumb;
+          this.updateRouteMeta(e.urlAfterRedirects);
         }),
 
       this.dash.getDashboardStream().subscribe(d => {
@@ -60,8 +56,13 @@ export class Topbar implements OnInit, OnDestroy {
 
   ngOnDestroy(): void { this.subs.forEach(s => s.unsubscribe()); }
 
+  private updateRouteMeta(url: string): void {
+    const m = ROUTE_META[url] ?? { title: 'ARCANE', crumb: '' };
+    this.title = m.title;
+    this.crumb = m.crumb;
+  }
+
   onSimulate(): void {
-    // Navigate to upload page for offline runs, or ping live API
     if (this.isUploadMode) {
       this.router.navigate(['/upload']);
     } else {

@@ -18,6 +18,7 @@ export class UploadPage {
   jsonText = '';
   error = '';
   success = false;
+  jsonValidation: { valid: boolean; message: string } | null = null;
 
   constructor(private dash: DashboardService, private router: Router) {}
 
@@ -31,11 +32,28 @@ export class UploadPage {
     reader.readAsText(file);
   }
 
+  onJsonInput(value: string): void {
+    this.jsonText = value;
+    if (!value.trim()) {
+      this.jsonValidation = null;
+      return;
+    }
+    try {
+      const parsed = JSON.parse(value);
+      if (parsed.stats && parsed.lastRunDetails) {
+        this.jsonValidation = { valid: true, message: 'Valid JSON — ready to load' };
+      } else {
+        this.jsonValidation = { valid: false, message: 'Missing required fields: stats, lastRunDetails' };
+      }
+    } catch (e: any) {
+      this.jsonValidation = { valid: false, message: 'Parse error: ' + (e?.message ?? 'invalid JSON') };
+    }
+  }
+
   load(): void {
     this.error = '';
     try {
       const parsed: DashboardResponse = JSON.parse(this.jsonText);
-      // Basic validation
       if (!parsed.stats || !parsed.lastRunDetails) {
         throw new Error('Missing required fields: stats, lastRunDetails');
       }
@@ -61,12 +79,13 @@ export class UploadPage {
   loadExample(): void {
     this.runName = 'Example Run';
     this.jsonText = JSON.stringify(EXAMPLE_RUN, null, 2);
+    this.jsonValidation = { valid: true, message: 'Valid JSON — ready to load' };
   }
 }
 
 // Minimal example so users can see the expected shape
 const EXAMPLE_RUN: DashboardResponse = {
-  stats: { total_attempts: 8, typo_fixes: 1, ml_fixes: 5, failed_heals: 2, start_time: new Date().toISOString() },
+  stats: { total_attempts: 8, failed_heals: 2, start_time: new Date().toISOString() },
   system: { ram: '3.2/12.0 GB', cpu: '14%', server_status: 'Active', device: 'CPU' },
   history: [],
   lastRunDetails: {

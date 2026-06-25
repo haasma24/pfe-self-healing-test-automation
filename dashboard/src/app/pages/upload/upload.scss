@@ -82,11 +82,26 @@
   resize: vertical;
   min-height: 180px;
   outline: none;
-  transition: border-color var(--transition);
+  transition: border-color var(--transition), box-shadow var(--transition);
   &:focus {
     border-color: var(--purple);
     box-shadow: 0 0 0 3px var(--purple-bg);
   }
+  &.json-valid { border-color: var(--emerald); box-shadow: 0 0 0 3px var(--emerald-bg); }
+  &.json-invalid { border-color: var(--rose); box-shadow: 0 0 0 3px var(--rose-bg); }
+}
+
+.json-validation {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  margin-top: 4px;
+  svg { flex-shrink: 0; }
+  &.json-valid { color: var(--emerald); background: var(--emerald-bg); }
+  &.json-invalid { color: var(--rose); background: var(--rose-bg); }
 }
 
 .error-msg {

@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         CONFIDENCE_THRESHOLD = '0.7'
-        URLS_FILE = 'C:\\ProgramData\\.pfe-urls.json'
+        URLS_FILE = 'C:/ProgramData/.pfe-urls.json'
     }
 
     stages {
@@ -25,7 +25,7 @@ pipeline {
                         echo "PAGE_URL=${env.PAGE_URL}"
                         echo "COLAB_API_URL=${env.COLAB_API_URL}"
                     } else {
-                        error "${env.URLS_FILE} not found. Run config/update-urls.ps1 after starting tunnels."
+                        error "${env.URLS_FILE} not found. Run config/start-infra.ps1 before pipeline."
                     }
                 }
             }
@@ -118,7 +118,24 @@ pipeline {
             }
         }
 
-        stage('Archive Reports') {
+        stage('Run ML Evaluation') {
+            environment {
+                COLAB_API_URL = "${COLAB_API_URL}"
+                PAGE_URL = "${PAGE_URL}"
+            }
+            steps {
+                dir('test-runner') {
+                    bat 'node scripts/run-eval.js'
+                }
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'test-runner/eval/reports/**/*.xml'
+                }
+            }
+        }
+
+        stage('Archive & Publish Reports') {
             steps {
                 publishHTML(target: [
                     reportDir   : 'test-runner/playwright-report',
@@ -128,7 +145,11 @@ pipeline {
                 dir('dashboard') {
                     bat 'tar -czf ../dashboard-build.tar.gz dist/'
                 }
-                archiveArtifacts artifacts: 'dashboard-build.tar.gz', fingerprint: true
+                archiveArtifacts artifacts: '''
+                    dashboard-build.tar.gz,
+                    test-runner/eval/reports/*.json,
+                    test-runner/eval/reports/*.csv
+                ''', fingerprint: true
             }
         }
     }

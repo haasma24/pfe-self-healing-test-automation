@@ -32,7 +32,7 @@
       </div>
 
       <div class="card anim-slide">
-        <div class="card-header"><span class="card-title">Strategy</span><span class="card-sub">Typo vs ML</span></div>
+        <div class="card-header"><span class="card-title">Summary Stats</span><span class="card-sub">All runs</span></div>
         <div class="card-body">
           <div class="card-stats" *ngIf="kpis">
             <div class="stat-item">
@@ -59,24 +59,6 @@
               <span class="stat-label">Avg Time</span>
               <span class="stat-value">{{ analytics!.summary.avgPipelineTime | number:'1.2-2' }}s</span>
             </div>
-            <div class="stat-item">
-              <span class="stat-label">Typo Fixes</span>
-              <span class="stat-value">{{ analytics!.summary.typoFixes }}</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-label">ML Fixes</span>
-              <span class="stat-value">{{ analytics!.summary.mlFixes }}</span>
-            </div>
-          </div>
-          <app-donut-chart *ngIf="strategyBreakdown.length" [data]="donutData"></app-donut-chart>
-          <div class="strat-summary" *ngIf="strategyBreakdown.length">
-            <div class="strat-summary-item" *ngFor="let s of strategyBreakdown">
-              <span class="tag" [class]="'tag--' + (s.strategy === 'typo' ? 'amber' : 'purple')" style="text-transform:lowercase">{{ s.strategy }}</span>
-              <span class="strat-summary-total">{{ s.total }} runs</span>
-              <span class="strat-summary-healed">+{{ s.healed }}</span>
-              <span class="strat-summary-failed">-{{ s.failed }}</span>
-              <span class="strat-summary-rate">{{ s.total > 0 ? (s.healed / s.total * 100 | number:'1.0-0') : 0 }}%</span>
-            </div>
           </div>
         </div>
       </div>
@@ -93,19 +75,6 @@
         </div>
       </div>
 
-      <div class="card anim-slide" *ngIf="strategyBreakdown.length">
-        <div class="card-header"><span class="card-title">Breakdown</span><span class="card-sub">Per strategy</span></div>
-        <div class="card-body">
-          <div class="strat-row" *ngFor="let s of strategyBreakdown">
-            <span class="tag" [class]="'tag--' + (s.strategy === 'typo' ? 'amber' : 'purple')" style="text-transform:lowercase">{{ s.strategy }}</span>
-            <div class="strat-stats">
-              <span class="strat-ok">+{{ s.healed }}</span>
-              <span class="strat-fail">-{{ s.failed }}</span>
-            </div>
-            <div class="bar-track" style="height:8px"><div class="bar-fill" [style.background]="'var(--green)'" [style.width.%]="s.total > 0 ? (s.healed / s.total * 100) : 0"></div></div>
-          </div>
-        </div>
-      </div>
     </div>
 
     <div class="card anim-slide" *ngIf="topBroken.length">
@@ -133,12 +102,6 @@
           <button class="filter-btn filter-btn--healed" [class.active]="statusFilter==='healed'" (click)="setFilter('status','healed')">Healed</button>
           <button class="filter-btn filter-btn--failed" [class.active]="statusFilter==='failed'" (click)="setFilter('status','failed')">Failed</button>
         </div>
-        <div class="filter-group">
-          <span class="filter-label">Strategy</span>
-          <button class="filter-btn" [class.active]="!strategyFilter" (click)="setFilter('strategy','')">All</button>
-          <button class="filter-btn filter-btn--typo" [class.active]="strategyFilter==='typo'" (click)="setFilter('strategy','typo')">Typo</button>
-          <button class="filter-btn filter-btn--ml" [class.active]="strategyFilter==='ml'" (click)="setFilter('strategy','ml')">ML</button>
-        </div>
         <div class="filter-group filter-group--search">
           <span class="filter-label">Search</span>
           <input class="filter-input" type="text" placeholder="Locator..." [value]="locatorFilter" (input)="locatorFilter = $any($event.target).value; page = 1">
@@ -150,7 +113,6 @@
           <thead><tr>
             <th class="sortable" (click)="setSort('ts')">Time <span class="sort-icon">{{ sortIcon('ts') }}</span></th>
             <th>Status</th>
-            <th>Strategy</th>
             <th class="sortable" (click)="setSort('broken_selector')">Broken <span class="sort-icon">{{ sortIcon('broken_selector') }}</span></th>
             <th class="sortable" (click)="setSort('healed_selector')">Healed <span class="sort-icon">{{ sortIcon('healed_selector') }}</span></th>
             <th class="sortable" (click)="setSort('confidence')">Confidence <span class="sort-icon">{{ sortIcon('confidence') }}</span></th>
@@ -159,12 +121,11 @@
           <tbody>
             <ng-container *ngFor="let r of pagedRuns; let i = index; trackBy: trackByFn">
               <tr class="date-sep-row" *ngIf="showDateHeader(r, i)">
-                <td colspan="7" class="date-sep-cell">{{ (r.ts || '').substring(0, 10) }}</td>
+                <td colspan="6" class="date-sep-cell">{{ (r.ts || '').substring(0, 10) }}</td>
               </tr>
-              <tr>
+              <tr class="hist-row" (click)="showDetails(r)">
                 <td class="mono-xs text-tertiary">{{ r.ts | slice:0:19 | replace:'T':' ' }}</td>
                 <td><span class="tag" [class]="'tag--' + (r.status === 'healed' ? 'green' : 'red')">{{ r.status === 'healed' ? 'healed' : 'failed' }}</span></td>
-                <td><span class="tag" [class]="'tag--' + (r.strategy === 'typo' ? 'amber' : 'purple')">{{ r.strategy }}</span></td>
                 <td class="mono-xs" style="color:var(--red)">{{ r.broken_selector }}</td>
                 <td class="mono-xs" style="color:var(--green)">{{ r.healed_selector || '—' }}</td>
                 <td class="mono-xs">{{ r.confidence | number:'1.3-3' }}</td>
@@ -181,6 +142,51 @@
           <button class="page-btn" [class.disabled]="page === 1" (click)="goToPage(page - 1)">Prev</button>
           <button class="page-btn" *ngFor="let p of pages" [class.active]="p === page" (click)="goToPage(p)">{{ p }}</button>
           <button class="page-btn" [class.disabled]="page === totalPages" (click)="goToPage(page + 1)">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal-overlay" *ngIf="selectedRun" (click)="closeDetails()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <span class="modal-title">Run Details</span>
+          <span class="modal-status">
+            <span class="tag" [class]="'tag--' + (selectedRun.status === 'healed' ? 'green' : 'red')">{{ selectedRun.status === 'healed' ? 'healed' : 'failed' }}</span>
+          </span>
+          <button class="modal-close" (click)="closeDetails()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="detail-grid">
+            <div class="detail-field">
+              <span class="detail-label">Timestamp</span>
+              <span class="detail-value mono-xs">{{ selectedRun.ts | slice:0:19 | replace:'T':' ' }}</span>
+            </div>
+            <div class="detail-field">
+              <span class="detail-label">Confidence</span>
+              <span class="detail-value mono-xs" [style.color]="selectedRun.confidence >= 0.7 ? 'var(--green)' : selectedRun.confidence >= 0.3 ? 'var(--amber)' : 'var(--rose)'">{{ selectedRun.confidence | number:'1.4-4' }}</span>
+            </div>
+            <div class="detail-field">
+              <span class="detail-label">Pipeline Time</span>
+              <span class="detail-value mono-xs">{{ selectedRun.pipeline_time | number:'1.2-2' }}s</span>
+            </div>
+            <div class="detail-field detail-field--full">
+              <span class="detail-label">Broken Selector</span>
+              <span class="detail-value mono-xs" style="color:var(--rose);word-break:break-all">{{ selectedRun.broken_selector }}</span>
+            </div>
+            <div class="detail-field detail-field--full">
+              <span class="detail-label">Healed Selector</span>
+              <span class="detail-value mono-xs" style="color:var(--green);word-break:break-all">{{ selectedRun.healed_selector || '—' }}</span>
+            </div>
+            <div class="detail-field" *ngIf="selectedRun.url">
+              <span class="detail-label">URL</span>
+              <span class="detail-value mono-xs" style="word-break:break-all">{{ selectedRun.url }}</span>
+            </div>
+            <div class="detail-field" *ngIf="selectedRun.baseline_text">
+              <span class="detail-label">Baseline Text</span>
+              <span class="detail-value mono-xs" style="word-break:break-all">{{ selectedRun.baseline_text }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

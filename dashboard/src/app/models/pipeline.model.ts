@@ -2,8 +2,6 @@
 
 export interface HealingStats {
   total_attempts: number;
-  typo_fixes: number;
-  ml_fixes: number;
   failed_heals: number;
   start_time: string;
 }
@@ -19,8 +17,11 @@ export interface HistoryEntry {
   ts: string;
   brokenSelector: string;
   healedSelector: string;
+  baselineText?: string;
+  baselineUrl?: string;
   confidence: number;
   status: 'healed' | 'failed';
+  cropUrl?: string;
 }
 
 export interface ScoreLayer {
@@ -36,6 +37,13 @@ export interface FunnelStep {
   pct: number;
 }
 
+export interface Bbox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface Candidate {
   rank: number;
   id: string;
@@ -47,14 +55,26 @@ export interface Candidate {
   ssimScore: number;
   locatorType: string;
   stability: string;
+  bbox?: Bbox;
+  cropUrl?: string;
 }
 
 export interface LocatorResult {
   testName: string;
   brokenLocator: string;
   healedLocator: string;
+  baselineText?: string;
+  baselineUrl?: string;
   confidence: number | null;
   status: 'healed' | 'failed';
+  cropUrl?: string;
+}
+
+export interface ScreenshotInfo {
+  annotated: string;
+  baseline: string;
+  imageWidth?: number;
+  imageHeight?: number;
 }
 
 export interface LastRunDetails {
@@ -70,6 +90,7 @@ export interface LastRunDetails {
   stageCounts: number[];
   stageTimings: number[];
   logs: string[];
+  screenshotInfo?: ScreenshotInfo;
 }
 
 export interface DashboardResponse {
@@ -108,13 +129,6 @@ export interface BrokenSelector {
   count: number;
 }
 
-export interface StrategyEntry {
-  strategy: string;
-  total: number;
-  healed: number;
-  failed: number;
-}
-
 export interface AnalyticsSummary {
   total: number;
   healed: number;
@@ -122,8 +136,6 @@ export interface AnalyticsSummary {
   healRate: number;
   avgConfidence: number;
   avgPipelineTime: number;
-  typoFixes: number;
-  mlFixes: number;
 }
 
 export interface AnalyticsResponse {
@@ -131,7 +143,6 @@ export interface AnalyticsResponse {
   timeline: TimelineEntry[];
   scoreDistribution: ScoreBucket[];
   topBrokenSelectors: BrokenSelector[];
-  strategyBreakdown: StrategyEntry[];
 }
 
 export interface HistoryRunList {

@@ -21,7 +21,7 @@ function loadEnv(filePath) {
 }
 
 const env      = loadEnv(path.resolve(__dirname, '.env.healing'));
-const PAGE_URL = env.PAGE_URL || process.env.PAGE_URL || 'https://edd0eb64e9e2ff.lhr.life/arcane-shop.html';
+const PAGE_URL = env.PAGE_URL || process.env.PAGE_URL || 'https://0db08412a5d665.lhr.life/arcane-shop.html';
 
 export default defineConfig({
   testDir:   './tests',

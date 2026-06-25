@@ -38,9 +38,18 @@
 .timing-name { font-size: 8px; color: var(--text-tertiary); text-align: center; max-width: 60px; line-height: 1.2; }
 .timing-time { font-size: 9px; color: var(--text-secondary); font-family: var(--mono); }
 
-.log-console { background: var(--bg-elevated); border-top: 1px solid var(--border); padding: 14px 20px; max-height: 200px; overflow-y: auto; }
-.log-line { font-size: 11px; font-family: var(--mono); color: var(--text-secondary); line-height: 1.7; padding: 1px 0; }
-.log-line:first-child { color: var(--text-tertiary); }
+.log-console { background: var(--bg-elevated); border-top: 1px solid var(--border); padding: 8px 0; max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+.log-console.log-expanded { max-height: 2000px; padding: 14px 20px; overflow-y: auto; }
+.log-entry { border-bottom: 1px solid var(--border-light); }
+.log-entry:last-child { border-bottom: none; }
+.log-line {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 11px; font-family: var(--mono); color: var(--text-secondary); line-height: 1.7;
+  padding: 6px 0; cursor: pointer; transition: background 0.15s;
+  &:hover { background: var(--bg-hover); border-radius: 4px; }
+}
+.log-marker { font-size: 8px; color: var(--text-tertiary); flex-shrink: 0; margin-top: 3px; }
+.log-text { flex: 1; word-break: break-all; }
 
 .winner-row td { background: rgba(16,185,129,0.04); }
 

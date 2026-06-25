@@ -51,5 +51,17 @@ export class Pipeline implements OnInit, OnDestroy {
     return 'var(--red)';
   }
 
+  expandedLogs: Set<number> = new Set();
+
+  toggleLog(i: number): void {
+    if (this.expandedLogs.has(i)) this.expandedLogs.delete(i);
+    else this.expandedLogs.add(i);
+  }
+
+  isLogExpanded(i: number): boolean { return this.expandedLogs.has(i); }
+
   trackByIndex(i: number): number { return i; }
+  trackByCandidate(i: number, c: Candidate): string { return c.id ?? String(i); }
+  trackByStage(i: number): number { return i; }
+  trackByTiming(i: number): number { return i; }
 }

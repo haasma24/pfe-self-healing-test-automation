@@ -7,7 +7,7 @@ import {
   TimelineChart, DonutChart, GaugeChart, FunnelChart, ScoreDistribution
 } from '../../shared/charts/charts';
 import { DashboardService } from '../../services/dashboard.service';
-import { DashboardResponse } from '../../models/pipeline.model';
+import { DashboardResponse, Candidate, LocatorResult } from '../../models/pipeline.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -28,6 +28,10 @@ export class Dashboard implements OnInit, OnDestroy {
   inlineUrl = '';
   urlSaved = false;
   showSetup = true;
+
+  zoomImage: string | null = null;
+  imgError = { annotated: false, baseline: false };
+  candidateZoom: Candidate | null = null;
 
   private subs: Subscription[] = [];
 
@@ -170,17 +174,6 @@ export class Dashboard implements OnInit, OnDestroy {
     }));
   }
 
-  get strategyBreakdown() {
-    const s = this.data?.stats;
-    if (!s) return [];
-    const total = s.typo_fixes + s.ml_fixes;
-    if (total === 0) return [];
-    return [
-      { name: 'Typo Fixes', value: s.typo_fixes, color: 'var(--amber)' },
-      { name: 'ML Fixes', value: s.ml_fixes, color: 'var(--accent)' },
-    ];
-  }
-
   get history() {
     return this.data?.history ?? [];
   }
@@ -208,5 +201,65 @@ export class Dashboard implements OnInit, OnDestroy {
 
   get stageTimingMax(): number {
     return Math.max(...this.stageTimingData, 0.01);
+  }
+
+  trackByCandidate(i: number, c: any): string { return c.id ?? i; }
+  trackByHistory(i: number, h: any): string { return h.ts + (h.brokenSelector ?? ''); }
+  trackByLocator(i: number, l: any): string { return l.brokenLocator + (l.healedLocator ?? ''); }
+  trackBySignal(i: number, s: any): string { return s.label; }
+  trackByTiming(i: number): number { return i; }
+  trackByFunnel(i: number): number { return i; }
+
+  get locatorResults(): LocatorResult[] {
+    return this.data?.lastRunDetails?.locators ?? [];
+  }
+
+  get hasScreenshots(): boolean {
+    return !!this.data?.lastRunDetails?.screenshotInfo;
+  }
+
+  get screenshotAnnotatedUrl(): string {
+    const info = this.data?.lastRunDetails?.screenshotInfo;
+    return info ? this.dash.getApiUrl() + info.annotated : '';
+  }
+
+  get screenshotBaselineUrl(): string {
+    const info = this.data?.lastRunDetails?.screenshotInfo;
+    return info ? this.dash.getApiUrl() + info.baseline : '';
+  }
+
+  openZoom(url: string): void {
+    this.zoomImage = url;
+  }
+
+  closeZoom(): void {
+    this.zoomImage = null;
+  }
+
+  onImgError(type: 'annotated' | 'baseline'): void {
+    this.imgError[type] = true;
+  }
+
+  readonly zoomColors = ['#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#f97316'];
+
+  selectCandidate(c: Candidate): void {
+    if (this.candidateZoom?.rank === c.rank) {
+      this.candidateZoom = null;
+      return;
+    }
+    this.candidateZoom = c.cropUrl ? c : null;
+  }
+
+  clearCandidateZoom(): void {
+    this.candidateZoom = null;
+  }
+
+  get selectedCropUrl(): string {
+    const url = this.candidateZoom?.cropUrl;
+    return url ? this.dash.getApiUrl() + url : '';
+  }
+
+  getFullUrl(path: string | null | undefined): string {
+    return path ? this.dash.getApiUrl() + path : '';
   }
 }

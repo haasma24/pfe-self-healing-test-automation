@@ -20,7 +20,6 @@ export class HistoryPage implements OnInit, OnDestroy {
   loading = true;
 
   statusFilter = '';
-  strategyFilter = '';
   locatorFilter = '';
   sortField = 'ts';
   sortDir: 'asc' | 'desc' = 'desc';
@@ -67,9 +66,6 @@ export class HistoryPage implements OnInit, OnDestroy {
     let list = this.allRuns;
     if (this.statusFilter) {
       list = list.filter(r => r.status === this.statusFilter);
-    }
-    if (this.strategyFilter) {
-      list = list.filter(r => r.strategy === this.strategyFilter);
     }
     if (this.locatorFilter) {
       const q = this.locatorFilter.toLowerCase();
@@ -139,10 +135,19 @@ export class HistoryPage implements OnInit, OnDestroy {
     return Math.min(this.page * this.pageSize, this.filteredRuns.length);
   }
 
-  setFilter(type: 'status' | 'strategy', value: string): void {
-    if (type === 'status') this.statusFilter = value;
-    else this.strategyFilter = value;
+  setFilter(type: 'status', value: string): void {
+    this.statusFilter = value;
     this.page = 1;
+  }
+
+  selectedRun: any | null = null;
+
+  showDetails(run: any): void {
+    this.selectedRun = run;
+  }
+
+  closeDetails(): void {
+    this.selectedRun = null;
   }
 
   get pages(): number[] {
@@ -179,8 +184,6 @@ export class HistoryPage implements OnInit, OnDestroy {
   get timeline() { return this.analytics?.timeline ?? []; }
   get scoreDistribution() { return this.analytics?.scoreDistribution ?? []; }
   get topBroken() { return this.analytics?.topBrokenSelectors ?? []; }
-  get strategyBreakdown() { return this.analytics?.strategyBreakdown ?? []; }
-
   get maxTimelineCount(): number {
     return Math.max(...this.timeline.map(t => t.total), 1);
   }
@@ -191,15 +194,6 @@ export class HistoryPage implements OnInit, OnDestroy {
 
   get maxScoreCount(): number {
     return Math.max(...this.scoreDistribution.map(b => b.count), 1);
-  }
-
-  get donutData(): { name: string; value: number; color: string }[] {
-    const cmap: Record<string, string> = { typo: 'var(--amber)', ml: 'var(--accent)' };
-    return this.strategyBreakdown.map(s => ({
-      name: s.strategy,
-      value: s.healed,
-      color: cmap[s.strategy] ?? 'var(--blue)'
-    }));
   }
 
   showDateHeader(r: any, i: number): boolean {

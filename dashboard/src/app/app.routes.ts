@@ -8,7 +8,7 @@ export const routes: Routes = [
   },
   {
     path: 'overview',
-    loadComponent: () => import('./pages/overview/overview').then(m => m.Overview)
+    loadComponent: () => import('./pages/dashboard/dashboard').then(m => m.Dashboard)
   },
   {
     path: 'pipeline',

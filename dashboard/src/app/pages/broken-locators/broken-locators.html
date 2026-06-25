@@ -8,6 +8,14 @@
     </div>
   </div>
 
+  <div class="search-bar" *ngIf="!loading && locators.length">
+    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input class="search-input" type="text" placeholder="Search by locator or test name..." [value]="searchQuery" (input)="searchQuery = ($any($event.target).value)" />
+    <button class="search-clear" *ngIf="searchQuery" (click)="searchQuery = ''">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
   <div class="loading-state" *ngIf="loading">
     <div class="spinner"></div>
     <div>Loading locators...</div>
@@ -16,18 +24,145 @@
   <div class="card anim-slide" *ngIf="!loading">
     <div class="table-wrap" *ngIf="filteredLocators.length > 0; else empty">
       <table>
-        <thead><tr><th>Status</th><th>Test</th><th>Broken</th><th>Healed</th><th>Score</th></tr></thead>
+        <thead><tr><th style="width:32px"></th><th style="width:130px">Time</th><th>Status</th><th>Broken</th><th>Healed</th><th>Score</th></tr></thead>
         <tbody>
-          <tr *ngFor="let loc of filteredLocators">
-            <td><span class="tag" [class]="'tag--' + (loc.status === 'healed' ? 'green' : 'red')">{{ loc.status === 'healed' ? 'healed' : 'failed' }}</span></td>
-            <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-primary)">{{ loc.testName }}</td>
-            <td class="loc-cell broken" (click)="copy($event, loc.brokenLocator)" [title]="loc.brokenLocator">{{ loc.brokenLocator }}</td>
-            <td class="loc-cell healed" (click)="copy($event, loc.healedLocator)" [title]="loc.healedLocator">{{ loc.healedLocator || '—' }}</td>
-            <td class="loc-score">{{ loc.confidence != null ? (loc.confidence | number:'1.2-2') : '—' }}</td>
-          </tr>
+          <ng-container *ngFor="let loc of filteredLocators; let i = index; trackBy: trackByLoc">
+            <tr class="loc-row" [class.row-expanded]="expandedIndex === i" (click)="toggleRow(i)">
+              <td class="loc-expand-col">
+                <span class="expand-chevron" [class.expanded]="expandedIndex === i">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                </span>
+              </td>
+              <td class="loc-time" [title]="loc.ts">{{ loc.ts ? (loc.ts | date:'HH:mm:ss') : '—' }}</td>
+              <td><span class="tag" [class]="'tag--' + (loc.status === 'healed' ? 'green' : 'red')">{{ loc.status === 'healed' ? 'healed' : 'failed' }}</span></td>
+              <td class="loc-cell broken" (click)="copy($event, loc.brokenLocator)" [title]="loc.brokenLocator">{{ loc.brokenLocator }}</td>
+              <td class="loc-cell healed" (click)="copy($event, loc.healedLocator)" [title]="loc.healedLocator">{{ loc.healedLocator || '—' }}</td>
+              <td class="loc-score-cell">
+                <div class="loc-score-bar" *ngIf="loc.confidence != null">
+                  <div class="loc-score-fill" [style.width.%]="loc.confidence * 100" [style.background]="scoreColor(loc.confidence)"></div>
+                  <span class="loc-score-val">{{ loc.confidence | number:'1.2-2' }}</span>
+                </div>
+                <span class="loc-score-mono" *ngIf="loc.confidence == null">—</span>
+              </td>
+            </tr>
+            <tr class="detail-row" *ngIf="expandedIndex === i">
+              <td colspan="6">
+                <div class="detail-panel anim-slide">
+                  <div class="detail-grid">
+                    <!-- Score Details -->
+                    <div class="detail-section">
+                      <div class="detail-section-title">Healing Details</div>
+                      <div class="score-breakdown">
+                        <div class="score-breakdown-row">
+                          <span class="score-breakdown-label">Confidence</span>
+                          <div class="score-breakdown-bar-track">
+                            <div class="score-breakdown-bar-fill" [style.width.%]="(loc.confidence || 0) * 100" [style.background]="scoreColor(loc.confidence || 0)"></div>
+                          </div>
+                          <span class="score-breakdown-val" [style.color]="scoreColor(loc.confidence || 0)">{{ loc.confidence != null ? (loc.confidence | number:'1.3-3') : '—' }}</span>
+                        </div>
+                        <div class="score-breakdown-row" *ngIf="loc.pipelineTime">
+                          <span class="score-breakdown-label">Pipeline</span>
+                          <span class="score-breakdown-val">{{ loc.pipelineTime | number:'1.2-2' }}s</span>
+                        </div>
+                        <div class="score-breakdown-row" *ngFor="let l of layers">
+                          <span class="score-breakdown-label">{{ l.label || l.name }}</span>
+                          <div class="score-breakdown-bar-track">
+                            <div class="score-breakdown-bar-fill" [style.width.%]="l.score * 100" [style.background]="l.color || 'var(--accent)'"></div>
+                          </div>
+                          <span class="score-breakdown-val">{{ l.score | number:'1.3-3' }}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Element Capture (from matching candidates) -->
+                    <div class="detail-section">
+                      <div class="detail-section-title">Element Capture</div>
+                      <ng-container *ngIf="cropUrlForLocator(loc) as url; else noCapture">
+                        <div class="capture-wrap">
+                          <img [src]="url" alt="Element crop" class="cand-crop-img" (click)="openZoom(url)" />
+                          <div class="capture-hint">Click to zoom</div>
+                        </div>
+                      </ng-container>
+                      <ng-template #noCapture>
+                        <div class="empty-state" style="padding:24px;font-size:11px">
+                          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                          <div style="margin-top:6px">No capture available for this run</div>
+                        </div>
+                      </ng-template>
+                    </div>
+
+                    <!-- Matching Candidates -->
+                    <div class="detail-section" *ngIf="matchingCandidates(loc).length">
+                      <div class="detail-section-title">Scores per Candidate</div>
+                      <div class="cand-list">
+                        <div class="cand-card" *ngFor="let c of matchingCandidates(loc)">
+                          <div class="cand-header">
+                            <span class="cand-rank">#{{ c.rank }}</span>
+                            <span class="cand-id">{{ c.id }}</span>
+                            <span class="tag" [class]="locatorTypeClass(c.locatorType)">{{ c.locatorType }}</span>
+                            <span class="tag" [class]="stabilityClass(c.stability)">{{ c.stability }}</span>
+                          </div>
+                          <div class="cand-scores">
+                            <div class="cand-score">
+                              <span class="cand-score-label">Blended</span>
+                              <span class="cand-score-val" [style.color]="scoreColor(c.blendedScore)">{{ c.blendedScore | number:'1.3-3' }}</span>
+                            </div>
+                            <div class="cand-score">
+                              <span class="cand-score-label">Semantic</span>
+                              <span class="cand-score-val">{{ c.semanticScore | number:'1.3-3' }}</span>
+                            </div>
+                            <div class="cand-score">
+                              <span class="cand-score-label">Context</span>
+                              <span class="cand-score-val">{{ c.contextualScore | number:'1.3-3' }}</span>
+                            </div>
+                            <div class="cand-score">
+                              <span class="cand-score-label">TF-IDF</span>
+                              <span class="cand-score-val">{{ c.tfidfScore | number:'1.3-3' }}</span>
+                            </div>
+                            <div class="cand-score">
+                              <span class="cand-score-label">SSIM</span>
+                              <span class="cand-score-val">{{ c.ssimScore | number:'1.3-3' }}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Full Page Screenshots -->
+                    <div class="detail-section" *ngIf="hasScreenshots && !imgError.annotated">
+                      <div class="detail-section-title">Full Page Capture</div>
+                      <div class="screenshot-row">
+                        <div class="screenshot-card" (click)="openZoom(screenshotAnnotatedUrl)">
+                          <div class="screenshot-card-label">Annotated</div>
+                          <img [src]="screenshotAnnotatedUrl" alt="Annotated" (error)="onImgError('annotated')" class="screenshot-thumb" />
+                        </div>
+                        <div class="screenshot-card" (click)="openZoom(screenshotBaselineUrl)" *ngIf="screenshotBaselineUrl">
+                          <div class="screenshot-card-label">Baseline</div>
+                          <img [src]="screenshotBaselineUrl" alt="Baseline" (error)="onImgError('baseline')" class="screenshot-thumb" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
         </tbody>
       </table>
     </div>
-    <ng-template #empty><div class="empty-state">No locators match the current filter.</div></ng-template>
+    <ng-template #empty>
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <div>{{ searchQuery ? 'No locators match "' + searchQuery + '"' : 'No locators yet — run the pipeline first.' }}</div>
+      </div>
+    </ng-template>
+  </div>
+</div>
+
+<!-- Zoom Modal -->
+<div class="zoom-overlay" *ngIf="zoomImage" (click)="closeZoom()">
+  <div class="zoom-modal" (click)="$event.stopPropagation()">
+    <button class="zoom-close" (click)="closeZoom()" title="Close">&times;</button>
+    <img [src]="zoomImage" alt="Zoomed image" />
   </div>
 </div>

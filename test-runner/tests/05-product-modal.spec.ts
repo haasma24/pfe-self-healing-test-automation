@@ -109,7 +109,7 @@ test.describe('Product Modal', () => {
   test('recently viewed grid should cap at 6 items', async ({ page }) => {
     for (let i = 1; i <= 7; i++) {
       await page.locator(`[data-testid="product-card-${i}"]`).click();
-      await page.locator('.modal-clse').click();                                          // ←  BROKEN (typo: clse)
+      await page.locator('.modal-clse').click();                                          
     }
     await expect(page.locator('#rv-grid .rv-card')).toHaveCount(6);
   });

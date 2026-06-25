@@ -8,6 +8,7 @@
   height: 100vh;
   overflow-y: auto;
   z-index: 10;
+  transition: transform var(--transition), width var(--transition), min-width var(--transition);
 }
 
 .sidebar-brand {
@@ -54,6 +55,20 @@
   }
 }
 
+.sidebar-close {
+  display: none;
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all var(--transition);
+  svg { width: 18px; height: 18px; }
+  &:hover { color: var(--text); background: var(--bg-hover); }
+}
+
 .nav-section {
   padding: 16px 10px 4px;
 }
@@ -82,6 +97,20 @@
   transition: all var(--transition);
   cursor: pointer;
   position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%) scaleY(0);
+    width: 3px;
+    height: 20px;
+    background: linear-gradient(to bottom, var(--purple), #a78bfa);
+    border-radius: 0 3px 3px 0;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 
   &:hover {
     background: var(--purple-bg);
@@ -95,15 +124,7 @@
     font-weight: 600;
     .nav-icon { color: var(--purple); }
     &::before {
-      content: '';
-      position: absolute;
-      left: -10px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 3px;
-      height: 20px;
-      background: linear-gradient(to bottom, var(--purple), #a78bfa);
-      border-radius: 0 3px 3px 0;
+      transform: translateY(-50%) scaleY(1);
     }
   }
 }
@@ -169,11 +190,22 @@
   flex-shrink: 0;
 }
 
+@media (max-width: 900px) {
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    transform: translateX(-100%);
+    box-shadow: var(--shadow-lg);
+  }
+  .sidebar.collapsed {
+    transform: translateX(0);
+  }
+  .sidebar-close { display: block; }
+  .sidebar-brand { padding-right: 12px; }
+}
+
 @media (max-width: 768px) {
-  .sidebar { width: 60px; min-width: 60px; }
-  .sidebar { .brand-text, .nav-section-label, .nav-item span, .status-label, .nav-badge { display: none; } }
-  .sidebar { .nav-item { justify-content: center; padding: 10px; } }
-  .sidebar { .brand-icon { margin: 0 auto; } }
-  .sidebar-footer { padding: 10px; }
-  .status { justify-content: center; padding: 6px; }
+  .sidebar { width: 200px; min-width: 200px; }
 }

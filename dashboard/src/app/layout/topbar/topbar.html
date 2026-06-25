@@ -1,7 +1,12 @@
 <div class="topbar">
   <div class="topbar-left">
-    <h1 class="topbar-title">{{ title }}</h1>
-    <span class="topbar-crumb">{{ crumb }}</span>
+    <button class="hamburger" (click)="toggleSidebar.emit()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div class="topbar-titles">
+      <h1 class="topbar-title">{{ title }}</h1>
+      <span class="topbar-crumb">{{ crumb }}</span>
+    </div>
   </div>
 
   <div class="topbar-right">

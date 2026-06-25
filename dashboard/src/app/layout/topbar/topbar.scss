@@ -12,8 +12,27 @@
 
 .topbar-left {
   display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.topbar-titles {
+  display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all var(--transition);
+  svg { width: 20px; height: 20px; }
+  &:hover { background: var(--bg-hover); color: var(--purple); }
 }
 
 .topbar-title {
@@ -103,6 +122,10 @@
     box-shadow: 0 0 8px var(--emerald);
     animation: pulse 2s infinite;
   }
+}
+
+@media (max-width: 900px) {
+  .hamburger { display: flex; }
 }
 
 @media (max-width: 768px) {

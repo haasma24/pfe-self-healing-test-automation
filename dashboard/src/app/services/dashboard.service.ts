@@ -11,7 +11,7 @@ import {
 } from '../models/pipeline.model';
 
 const EMPTY_DASHBOARD: DashboardResponse = {
-  stats: { total_attempts: 0, typo_fixes: 0, ml_fixes: 0, failed_heals: 0, start_time: new Date().toISOString() },
+  stats: { total_attempts: 0, failed_heals: 0, start_time: new Date().toISOString() },
   system: { ram: '—', cpu: '—', server_status: 'Not connected', device: '—' },
   history: [],
   lastRunDetails: {
@@ -23,11 +23,10 @@ const EMPTY_DASHBOARD: DashboardResponse = {
 };
 
 const EMPTY_ANALYTICS: AnalyticsResponse = {
-  summary: { total: 0, healed: 0, failed: 0, healRate: 0, avgConfidence: 0, avgPipelineTime: 0, typoFixes: 0, mlFixes: 0 },
+  summary: { total: 0, healed: 0, failed: 0, healRate: 0, avgConfidence: 0, avgPipelineTime: 0 },
   timeline: [],
   scoreDistribution: [],
-  topBrokenSelectors: [],
-  strategyBreakdown: []
+  topBrokenSelectors: []
 };
 
 @Injectable({ providedIn: 'root' })

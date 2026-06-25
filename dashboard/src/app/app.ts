@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Sidebar } from './layout/sidebar/sidebar';
@@ -9,12 +9,13 @@ import { Topbar } from './layout/topbar/topbar';
   standalone: true,
   imports: [CommonModule, RouterOutlet, Sidebar, Topbar],
   template: `
-    <div class="app-shell">
+    <div class="app-shell" [class.sidebar-open]="sidebarOpen">
       <div class="app-bg"></div>
+      <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="sidebarOpen = false"></div>
       <div class="app-layout">
-        <app-sidebar></app-sidebar>
+        <app-sidebar [collapsed]="!sidebarOpen"></app-sidebar>
         <div class="app-main">
-          <app-topbar></app-topbar>
+          <app-topbar (toggleSidebar)="sidebarOpen = !sidebarOpen"></app-topbar>
           <main class="app-content">
             <router-outlet></router-outlet>
           </main>
@@ -54,6 +55,24 @@ import { Topbar } from './layout/topbar/topbar';
       padding: 20px 24px 32px;
       overflow-y: auto;
     }
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      z-index: 9;
+      backdrop-filter: blur(4px);
+    }
+    @media (max-width: 900px) {
+      .sidebar-overlay { display: block; }
+    }
   `]
 })
-export class App {}
+export class App {
+  sidebarOpen = window.innerWidth > 900;
+
+  @HostListener('window:resize')
+  onResize(): void {
+    if (window.innerWidth > 900) this.sidebarOpen = true;
+  }
+}

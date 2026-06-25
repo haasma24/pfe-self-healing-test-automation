@@ -33,7 +33,7 @@ function cleanUrl(raw) {
 }
 
 export const COLAB_API_URL        = cleanUrl(env.COLAB_API_URL        || process.env.COLAB_API_URL        || '');
-export const PAGE_URL             = cleanUrl(env.PAGE_URL             || process.env.PAGE_URL             || 'https://edd0eb64e9e2ff.lhr.life/arcane-shop.html');
+export const PAGE_URL             = cleanUrl(env.PAGE_URL             || process.env.PAGE_URL             || 'https://0db08412a5d665.lhr.life/arcane-shop.html');
 export const CONFIDENCE_THRESHOLD = parseFloat(env.CONFIDENCE_THRESHOLD || process.env.CONFIDENCE_THRESHOLD || '0.45');
 export const REQUEST_TIMEOUT_MS   = 180_000;
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
@@ -13,6 +13,9 @@ import { DashboardResponse } from '../../models/pipeline.model';
   styleUrl: './sidebar.scss'
 })
 export class Sidebar implements OnInit, OnDestroy {
+
+  @Input() collapsed = false;
+  @Output() closeNav = new EventEmitter<void>();
 
   failedCount = 0;
   stageCount  = 0;
@@ -46,5 +49,9 @@ export class Sidebar implements OnInit, OnDestroy {
 
   get statusOnline(): boolean {
     return this.isConnected && !this.isUploadMode;
+  }
+
+  onNavClick(): void {
+    if (window.innerWidth <= 900) this.closeNav.emit();
   }
 }

@@ -11,7 +11,7 @@
     <div class="card anim-slide">
       <div class="card-header"><span class="card-title">Funnel Breakdown</span><span class="card-sub">Candidates per stage</span></div>
       <div class="funnel-list">
-        <div class="funnel-row" *ngFor="let f of funnel; let i = index">
+        <div class="funnel-row" *ngFor="let f of funnel; let i = index; trackBy: trackByStage">
           <span class="funnel-num">{{ i + 1 }}</span>
           <span class="funnel-name">{{ f.name }}</span>
           <div class="funnel-bar"><div class="funnel-fill" [style.width.%]="f.pct" [style.background]="['var(--accent)','var(--green)','var(--amber)','var(--blue)'][i]"></div></div>
@@ -24,7 +24,7 @@
     <div class="card anim-slide">
       <div class="card-header"><span class="card-title">Stage Timings</span><span class="card-sub">Time per stage</span></div>
       <div class="timing-chart" *ngIf="stageTimings.length; else noTimings">
-        <div class="timing-bar-wrap" *ngFor="let t of stageTimings">
+          <div class="timing-bar-wrap" *ngFor="let t of stageTimings; trackBy: trackByTiming">
           <div class="timing-fill" [style.height.%]="t.pct + 20" [style.background]="['var(--accent)','var(--green)','var(--amber)','var(--blue)'][stageTimings.indexOf(t)]"></div>
           <span class="timing-name">{{ t.name }}</span>
           <span class="timing-time">{{ t.time | number:'1.2-2' }}s</span>
@@ -40,7 +40,7 @@
       <table>
         <thead><tr><th>#</th><th>ID</th><th>Tag</th><th>Blended</th><th>Semantic</th><th>Contextual</th><th>TF-IDF</th><th>SSIM</th><th>Type</th></tr></thead>
         <tbody>
-          <tr *ngFor="let c of candidates; let i = index" [class]="i === 0 ? 'winner-row' : ''">
+          <tr *ngFor="let c of candidates; let i = index; trackBy: trackByCandidate" [class]="i === 0 ? 'winner-row' : ''">
             <td><span class="rank" [class]="'rank--' + (i < 3 ? (i+1) : 'n')">{{ c.rank }}</span></td>
             <td style="font-family:var(--mono);font-size:10px;color:var(--text-primary);max-width:160px;overflow:hidden;text-overflow:ellipsis;" [title]="c.id">{{ c.id }}</td>
             <td style="font-family:var(--mono);font-size:10px;color:var(--text-tertiary);">{{ c.tag }}</td>
@@ -57,9 +57,14 @@
   </div>
 
   <div class="card anim-slide" *ngIf="logs.length">
-    <div class="card-header"><span class="card-title">Pipeline Logs</span><button class="btn btn-ghost" (click)="showLogs = !showLogs" style="padding:4px 10px;font-size:10px">{{ showLogs ? 'Hide' : 'Show' }}</button></div>
-    <div class="log-console" *ngIf="showLogs">
-      <div class="log-line" *ngFor="let line of logs; trackBy: trackByIndex">{{ line }}</div>
+    <div class="card-header"><span class="card-title">Pipeline Logs</span><div style="display:flex;gap:4px;align-items:center;"><span class="card-sub">{{ logs.length }} entries</span><button class="btn btn-ghost" (click)="showLogs = !showLogs" style="padding:4px 10px;font-size:10px">{{ showLogs ? 'Collapse' : 'Expand' }}</button></div></div>
+    <div class="log-console" *ngIf="showLogs" [class.log-expanded]="showLogs">
+      <div class="log-entry" *ngFor="let line of logs; let i = index; trackBy: trackByIndex">
+        <div class="log-line" (click)="toggleLog(i)">
+          <span class="log-marker">{{ isLogExpanded(i) ? '▼' : '▶' }}</span>
+          <span class="log-text">{{ line.length > 80 && !isLogExpanded(i) ? (line | slice:0:80) + '…' : line }}</span>
+        </div>
+      </div>
     </div>
   </div>
 </div>
