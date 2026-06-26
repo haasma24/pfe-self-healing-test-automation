@@ -4,6 +4,7 @@
 import fs   from 'fs';
 import path from 'path';
 import { healSelector as _healRaw } from './healer.js';
+import { PAGE_URL } from './config.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  DOM TAG LOOKUP
@@ -190,9 +191,11 @@ export function matchesExpected(element, expected) {
 // ─────────────────────────────────────────────────────────────────────────────
 export async function runScenario(scenarioPath) {
   const scenario = JSON.parse(fs.readFileSync(scenarioPath, 'utf8'));
+  // Use scenario URL as fallback if config PAGE_URL is empty
+  const activeUrl = (PAGE_URL || scenario.url || '').replace(/\/+$/, '');
   console.log(`\n${'='.repeat(60)}`);
   console.log(`  EVAL: ${scenario.scenario}`);
-  console.log(`  URL : ${scenario.url}`);
+  console.log(`  URL : ${activeUrl}`);
   console.log(`  Cases: ${scenario.cases.length}`);
   console.log('='.repeat(60));
 
@@ -208,7 +211,7 @@ export async function runScenario(scenarioPath) {
 
     try {
       apiResult = await healSelector({
-        url:                  scenario.url,
+        url:                  activeUrl,
         brokenSelector:       c.broken_selector,
         baselineText:         c.baseline_text || undefined,
         confidenceThreshold:  c.confidence_threshold ?? 0.70,
@@ -226,7 +229,7 @@ export async function runScenario(scenarioPath) {
     if (apiResult?.success) {
       // Enrich element.tag from the live page when the typo-pass returns a bare #id selector
       if (apiResult.element && !apiResult.element.tag && apiResult.recommended) {
-        const domTag = await fetchTagFromPage(scenario.url, apiResult.recommended);
+        const domTag = await fetchTagFromPage(activeUrl, apiResult.recommended);
         if (domTag) apiResult.element.tag = domTag;
       }
 

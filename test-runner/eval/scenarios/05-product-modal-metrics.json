@@ -1,10 +1,10 @@
-{
-  "scenario": "Product Modal — broken selectors",
-  "url": "https://0db08412a5d665.lhr.life/arcane-shop.html",
+﻿{
+  "scenario": "Product Modal â€” broken selectors",
+  "url": "https://72d77c1007af08.lhr.life/arcane-shop.html",
   "cases": [
     {
       "id": "pm-01",
-      "description": "Typo: modal-titlee → modal-title",
+      "description": "Typo: modal-titlee â†’ modal-title",
       "broken_selector": "#modal-titlee",
       "baseline_text": "product modal title heading",
       "confidence_threshold": 0.30,
@@ -13,7 +13,7 @@
     },
     {
       "id": "pm-02",
-      "description": "Typo: modal-descc → modal-desc",
+      "description": "Typo: modal-descc â†’ modal-desc",
       "broken_selector": "#modal-descc",
       "baseline_text": "product modal description text",
       "confidence_threshold": 0.30,
@@ -22,7 +22,7 @@
     },
     {
       "id": "pm-03",
-      "description": "Typo: modal-size-pickerr → modal-size-picker",
+      "description": "Typo: modal-size-pickerr â†’ modal-size-picker",
       "broken_selector": "#modal-size-pickerr",
       "baseline_text": "product size picker selector",
       "confidence_threshold": 0.30,
@@ -31,7 +31,7 @@
     },
     {
       "id": "pm-04",
-      "description": "Typo: rv-gridd → rv-grid",
+      "description": "Typo: rv-gridd â†’ rv-grid",
       "broken_selector": "#rv-gridd",
       "baseline_text": "recently viewed products grid",
       "confidence_threshold": 0.30,
@@ -40,7 +40,7 @@
     },
     {
       "id": "pm-05",
-      "description": "Sélecteur inexistant — pipeline doit refuser",
+      "description": "SÃ©lecteur inexistant â€” pipeline doit refuser",
       "broken_selector": "#this-modal-element-does-not-exist-xyz999",
       "baseline_text": "nonexistent modal element",
       "confidence_threshold": 0.30,

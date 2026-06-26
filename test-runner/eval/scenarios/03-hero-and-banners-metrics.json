@@ -1,10 +1,10 @@
-{
-  "scenario": "Hero & Banners — broken selectors",
-  "url": "https://0db08412a5d665.lhr.life/arcane-shop.html",
+﻿{
+  "scenario": "Hero & Banners â€” broken selectors",
+  "url": "https://72d77c1007af08.lhr.life/arcane-shop.html",
   "cases": [
     {
       "id": "hb-01",
-      "description": "Typo: hero-secton → hero-section",
+      "description": "Typo: hero-secton â†’ hero-section",
       "broken_selector": "[data-testid=\"hero-secton\"]",
       "baseline_text": "hero section",
       "confidence_threshold": 0.30,
@@ -13,7 +13,7 @@
     },
     {
       "id": "hb-02",
-      "description": "Typo: btn-gost → btn-ghost (hero lookbook button)",
+      "description": "Typo: btn-gost â†’ btn-ghost (hero lookbook button)",
       "broken_selector": "#hero-section .btn-gost",
       "baseline_text": "hero lookbook ghost button",
       "confidence_threshold": 0.30,
@@ -22,7 +22,7 @@
     },
     {
       "id": "hb-03",
-      "description": "Typo: featured-bannerr → featured-banner",
+      "description": "Typo: featured-bannerr â†’ featured-banner",
       "broken_selector": "[data-testid=\"featured-bannerr\"]",
       "baseline_text": "featured sale banner",
       "confidence_threshold": 0.30,
@@ -31,7 +31,7 @@
     },
     {
       "id": "hb-04",
-      "description": "Sélecteur inexistant — pipeline doit refuser",
+      "description": "SÃ©lecteur inexistant â€” pipeline doit refuser",
       "broken_selector": "#this-hero-element-does-not-exist-xyz999",
       "baseline_text": "nonexistent hero element",
       "confidence_threshold": 0.30,

@@ -1,10 +1,10 @@
-{
-  "scenario": "Search — broken selectors",
-  "url": "https://0db08412a5d665.lhr.life/arcane-shop.html",
+﻿{
+  "scenario": "Search â€” broken selectors",
+  "url": "https://72d77c1007af08.lhr.life/arcane-shop.html",
   "cases": [
     {
       "id": "srch-01",
-      "description": "Typo: search-modall → search-modal",
+      "description": "Typo: search-modall â†’ search-modal",
       "broken_selector": "#search-modall",
       "baseline_text": "search modal overlay",
       "confidence_threshold": 0.30,
@@ -13,7 +13,7 @@
     },
     {
       "id": "srch-02",
-      "description": "Typo: search-tagg → search-tag (Backpack quick-search)",
+      "description": "Typo: search-tagg â†’ search-tag (Backpack quick-search)",
       "broken_selector": ".search-tagg",
       "baseline_text": "search quick tag filter button",
       "confidence_threshold": 0.30,
@@ -22,7 +22,7 @@
     },
     {
       "id": "srch-03",
-      "description": "Typo: search-inputt → search-input",
+      "description": "Typo: search-inputt â†’ search-input",
       "broken_selector": "[data-testid=\"search-inputt\"]",
       "baseline_text": "inline search input field",
       "confidence_threshold": 0.30,
@@ -31,7 +31,7 @@
     },
     {
       "id": "srch-04",
-      "description": "Typo: count-totall → count-total",
+      "description": "Typo: count-totall â†’ count-total",
       "broken_selector": "#count-totall",
       "baseline_text": "total product count label",
       "confidence_threshold": 0.30,
@@ -40,7 +40,7 @@
     },
     {
       "id": "srch-05",
-      "description": "Typo: filter-checkbox-techh → filter-checkbox-tech",
+      "description": "Typo: filter-checkbox-techh â†’ filter-checkbox-tech",
       "broken_selector": "[data-testid=\"filter-checkbox-techh\"]",
       "baseline_text": "tech gadgets category filter checkbox",
       "confidence_threshold": 0.30,
@@ -49,7 +49,7 @@
     },
     {
       "id": "srch-06",
-      "description": "Sélecteur inexistant — pipeline doit refuser",
+      "description": "SÃ©lecteur inexistant â€” pipeline doit refuser",
       "broken_selector": "#this-search-element-does-not-exist-xyz999",
       "baseline_text": "nonexistent search element",
       "confidence_threshold": 0.30,

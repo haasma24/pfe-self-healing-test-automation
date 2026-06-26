@@ -1,10 +1,10 @@
-{
-  "scenario": "Cart — broken selectors",
-  "url": "https://0db08412a5d665.lhr.life/arcane-shop.html",
+﻿{
+  "scenario": "Cart â€” broken selectors",
+  "url": "https://72d77c1007af08.lhr.life/arcane-shop.html",
   "cases": [
     {
       "id": "cart-01",
-      "description": "Typo: cart-panell → cart-panel",
+      "description": "Typo: cart-panell â†’ cart-panel",
       "broken_selector": "[data-testid=\"cart-panell\"]",
       "baseline_text": "cart panel sidebar",
       "confidence_threshold": 0.30,
@@ -13,7 +13,7 @@
     },
     {
       "id": "cart-02",
-      "description": "Typo: cart-items-listt → cart-items-list",
+      "description": "Typo: cart-items-listt â†’ cart-items-list",
       "broken_selector": "#cart-items-listt",
       "baseline_text": "cart items list container",
       "confidence_threshold": 0.30,
@@ -22,7 +22,7 @@
     },
     {
       "id": "cart-03",
-      "description": "Typo: cart-shpping → cart-shipping",
+      "description": "Typo: cart-shpping â†’ cart-shipping",
       "broken_selector": "#cart-shpping",
       "baseline_text": "cart shipping cost display",
       "confidence_threshold": 0.30,
@@ -31,7 +31,7 @@
     },
     {
       "id": "cart-04",
-      "description": "Sélecteur inexistant — pipeline doit refuser",
+      "description": "SÃ©lecteur inexistant â€” pipeline doit refuser",
       "broken_selector": "#this-cart-element-does-not-exist-xyz999",
       "baseline_text": "nonexistent cart element",
       "confidence_threshold": 0.30,

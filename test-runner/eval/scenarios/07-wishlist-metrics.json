@@ -1,10 +1,10 @@
-{
-  "scenario": "Wishlist — broken selectors",
-  "url": "https://0db08412a5d665.lhr.life/arcane-shop.html",
+﻿{
+  "scenario": "Wishlist â€” broken selectors",
+  "url": "https://72d77c1007af08.lhr.life/arcane-shop.html",
   "cases": [
     {
       "id": "wl-01",
-      "description": "Typo: wishlist-panell → wishlist-panel",
+      "description": "Typo: wishlist-panell â†’ wishlist-panel",
       "broken_selector": "#wishlist-panell",
       "baseline_text": "wishlist panel sidebar",
       "confidence_threshold": 0.30,
@@ -13,7 +13,7 @@
     },
     {
       "id": "wl-02",
-      "description": "Typo: wishlist-items-listt → wishlist-items-list",
+      "description": "Typo: wishlist-items-listt â†’ wishlist-items-list",
       "broken_selector": "#wishlist-items-listt",
       "baseline_text": "wishlist items list container",
       "confidence_threshold": 0.30,
@@ -31,7 +31,7 @@
     },
     {
       "id": "wl-04",
-      "description": "Typo: wishlist-countt → wishlist-count",
+      "description": "Typo: wishlist-countt â†’ wishlist-count",
       "broken_selector": "[data-testid=\"wishlist-countt\"]",
       "baseline_text": "wishlist item count badge",
       "confidence_threshold": 0.30,
@@ -40,7 +40,7 @@
     },
     {
       "id": "wl-05",
-      "description": "Sélecteur inexistant — pipeline doit refuser",
+      "description": "SÃ©lecteur inexistant â€” pipeline doit refuser",
       "broken_selector": "#this-wishlist-element-does-not-exist-xyz999",
       "baseline_text": "nonexistent wishlist element",
       "confidence_threshold": 0.30,

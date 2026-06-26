@@ -1,10 +1,10 @@
-{
-  "scenario": "Checkout — broken selectors",
-  "url": "https://0db08412a5d665.lhr.life/arcane-shop.html",
+﻿{
+  "scenario": "Checkout â€” broken selectors",
+  "url": "https://72d77c1007af08.lhr.life/arcane-shop.html",
   "cases": [
     {
       "id": "co-01",
-      "description": "Typo: co-subtotall → co-subtotal",
+      "description": "Typo: co-subtotall â†’ co-subtotal",
       "broken_selector": "#co-subtotall",
       "baseline_text": "checkout order subtotal amount",
       "confidence_threshold": 0.30,
@@ -13,7 +13,7 @@
     },
     {
       "id": "co-02",
-      "description": "Typo: checkout-lastnmae → checkout-lastname",
+      "description": "Typo: checkout-lastnmae â†’ checkout-lastname",
       "broken_selector": "[data-testid=\"checkout-lastnmae\"]",
       "baseline_text": "checkout last name input field",
       "confidence_threshold": 0.30,
@@ -22,7 +22,7 @@
     },
     {
       "id": "co-03",
-      "description": "Typo: checkout-continue-shpping-btn → checkout-continue-shipping-btn",
+      "description": "Typo: checkout-continue-shpping-btn â†’ checkout-continue-shipping-btn",
       "broken_selector": "[data-testid=\"checkout-continue-shpping-btn\"]",
       "baseline_text": "checkout continue to shipping button",
       "confidence_threshold": 0.30,
@@ -31,7 +31,7 @@
     },
     {
       "id": "co-04",
-      "description": "Typo: co-discount-roww → co-discount-row",
+      "description": "Typo: co-discount-roww â†’ co-discount-row",
       "broken_selector": "#co-discount-roww",
       "baseline_text": "checkout coupon discount row",
       "confidence_threshold": 0.30,
@@ -40,7 +40,7 @@
     },
     {
       "id": "co-05",
-      "description": "Typo: confirmation-order-numm → confirmation-order-num",
+      "description": "Typo: confirmation-order-numm â†’ confirmation-order-num",
       "broken_selector": "#confirmation-order-numm",
       "baseline_text": "order confirmation number display",
       "confidence_threshold": 0.30,
@@ -49,7 +49,7 @@
     },
     {
       "id": "co-06",
-      "description": "Sélecteur inexistant — pipeline doit refuser",
+      "description": "SÃ©lecteur inexistant â€” pipeline doit refuser",
       "broken_selector": "#this-checkout-element-does-not-exist-xyz999",
       "baseline_text": "nonexistent checkout element",
       "confidence_threshold": 0.30,
