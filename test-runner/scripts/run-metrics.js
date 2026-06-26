@@ -54,7 +54,7 @@ async function main() {
   // ── Mode A: re-analyze an existing report file ───────────────────────────
   if (fromFile) {
     console.log(`\n[Metrics] Re-analyzing: ${fromFile}`);
-    const saved = JSON.parse(fs.readFileSync(fromFile, 'utf8'));
+    const saved = JSON.parse(fs.readFileSync(fromFile, 'utf8').replace(/^\uFEFF/, ''));
 
     // Support both raw evaluator output and metrics report format
     if (saved.global) {

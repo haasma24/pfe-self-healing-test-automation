@@ -190,7 +190,7 @@ export function matchesExpected(element, expected) {
 //  RUN SCENARIO
 // ─────────────────────────────────────────────────────────────────────────────
 export async function runScenario(scenarioPath) {
-  const scenario = JSON.parse(fs.readFileSync(scenarioPath, 'utf8'));
+  const scenario = JSON.parse(fs.readFileSync(scenarioPath, 'utf8').replace(/^\uFEFF/, ''));
   // Use scenario URL as fallback if config PAGE_URL is empty
   const activeUrl = (PAGE_URL || scenario.url || '').replace(/\/+$/, '');
   console.log(`\n${'='.repeat(60)}`);
