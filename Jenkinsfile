@@ -107,15 +107,7 @@ pipeline {
             }
         }
 
-        stage('Install Playwright Browsers') {
-            steps {
-                dir('test-runner') {
-                    bat 'npx playwright install chromium'
-                }
-            }
-        }
-
-        stage('Run Playwright Tests') {
+        stage('Run Metrics') {
             environment {
                 COLAB_API_URL = "${COLAB_API_URL}"
                 PAGE_URL = "${PAGE_URL}"
@@ -123,47 +115,19 @@ pipeline {
             }
             steps {
                 dir('test-runner') {
-                    bat 'npx playwright test --reporter=html,json,junit'
-                }
-            }
-            post {
-                always {
-                    junit allowEmptyResults: true, testResults: 'test-runner/test-results/**/*.xml'
-                }
-            }
-        }
-
-        stage('Run ML Evaluation') {
-            environment {
-                COLAB_API_URL = "${COLAB_API_URL}"
-                PAGE_URL = "${PAGE_URL}"
-            }
-            steps {
-                dir('test-runner') {
-                    bat 'node scripts/run-eval.js'
-                }
-            }
-            post {
-                always {
-                    junit allowEmptyResults: true, testResults: 'test-runner/eval/reports/**/*.xml'
+                    bat 'node scripts/run-metrics.js'
                 }
             }
         }
 
         stage('Archive & Publish Reports') {
             steps {
-                publishHTML(target: [
-                    reportDir   : 'test-runner/playwright-report',
-                    reportFiles : 'index.html',
-                    reportName  : 'Playwright Test Report'
-                ])
                 dir('dashboard') {
                     bat 'tar -czf ../dashboard-build.tar.gz dist/'
                 }
                 archiveArtifacts artifacts: '''
                     dashboard-build.tar.gz,
-                    test-runner/eval/reports/*.json,
-                    test-runner/eval/reports/*.csv
+                    test-runner/eval/reports/*.json
                 ''', fingerprint: true
             }
         }
