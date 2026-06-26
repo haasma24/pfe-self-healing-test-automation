@@ -1,13 +1,13 @@
 # Self-Healing Test Automation — PFE
 
-Suite de tests Playwright avec auto-reparation par IA + dashboard de monitoring.
+Pipeline ML de self-healing avec evaluation de métriques + dashboard de monitoring.
 
 ## Structure
 
 | Dossier | Contenu |
 |---|---|
 | `shop/` | Application e-commerce testee (vanilla JS) |
-| `test-runner/` | Tests Playwright + pipeline ML de self-healing |
+| `test-runner/` | Pipeline ML de self-healing + evaluation de métriques |
 | `dashboard/` | Monitoring Angular |
 | `config/` | Scripts d'infrastructure (start/stop tunnels) |
 | `pipeline/` | Notebook Colab du pipeline ML (`self_healing_db.ipynb`) |
@@ -28,12 +28,25 @@ Suite de tests Playwright avec auto-reparation par IA + dashboard de monitoring.
 
 Les URLs sont stockees dans `C:\ProgramData\.pfe-urls.json` (utilise par Jenkins).
 
-## Lancer les tests (Pipeline ML)
+## Lancer l'evaluation des métriques
 
 ```powershell
 cd test-runner
-npx playwright test
+node scripts/run-metrics.js
 ```
+
+Lit les scenarios dans `eval/scenarios/`, interroge l'API Colab, et produit un rapport dans `eval/reports/` avec :
+- Accuracy, Precision, Recall, F1
+- Taux de faux positifs / faux négatifs
+- Distribution des temps de guérison
+- Tableau de comparaison (via `--compare`)
+
+Arguments optionnels :
+| Flag | Description |
+|---|---|
+| `--report <chemin>` | Dossier de sortie du rapport (defaut: `eval/reports`) |
+| `--from <fichier>` | Re-analyser un rapport existant sans relancer l'API |
+| `--compare "nom:acc=0.90,fpr=0.05"` | Comparer avec d'autres approches |
 
 ## Dashboard
 
@@ -48,12 +61,11 @@ npx ng serve --port 4200
 Le `Jenkinsfile` a la racine automatise :
 1. Installation des dependances (`npm ci`)
 2. Build du dashboard Angular
-3. Installation de Playwright + browsers
-4. Execution des tests avec auto-healing
-5. Evaluation ML (`node scripts/run-eval.js`)
-6. Publication des rapports HTML + artefacts
+3. Evaluation des métriques ML (`node scripts/run-metrics.js`)
+4. Archivage des rapports JSON + build du dashboard
 
 ## Rapports
 
+- `test-runner/eval/reports/metrics-*.json` — Rapports de métriques generés par `run-metrics.js`
 - `docs/rapport-comparatif.pdf` — Comparatif des 4 approches de self-healing
 - `docs/rapport.pdf` — Rapport de PFE
