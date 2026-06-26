@@ -26,14 +26,33 @@ function loadEnv(filePath) {
 const envPath = path.resolve(__dirname, '../.env.healing');
 const env     = loadEnv(envPath);
 
+function loadSharedUrls() {
+  const urlsFile = 'C:/ProgramData/.pfe-urls.json';
+  if (!fs.existsSync(urlsFile)) return {};
+  try {
+    const raw = fs.readFileSync(urlsFile, 'utf8');
+    const clean = raw.charCodeAt(0) === 0xFEFF ? raw.slice(1) : raw;
+    const data = JSON.parse(clean);
+    return {
+      PAGE_URL:       data.page_url ? `${data.page_url.replace(/\/+$/, '')}/arcane-shop.html` : '',
+      COLAB_API_URL:  data.api_url  || '',
+    };
+  } catch (e) {
+    console.warn(`[Config]   Failed to parse ${urlsFile}: ${e.message}`);
+    return {};
+  }
+}
+
 function cleanUrl(raw) {
   if (!raw) return '';
   const m = raw.match(/https?:\/\/[^\s"']+/);
   return m ? m[0].replace(/\/$/, '') : raw.trim();
 }
 
-export const COLAB_API_URL        = cleanUrl(process.env.COLAB_API_URL        || env.COLAB_API_URL        || '');
-export const PAGE_URL             = cleanUrl(process.env.PAGE_URL             || env.PAGE_URL             || 'https://0db08412a5d665.lhr.life/arcane-shop.html');
+const shared = loadSharedUrls();
+
+export const COLAB_API_URL        = cleanUrl(process.env.COLAB_API_URL  || env.COLAB_API_URL  || shared.COLAB_API_URL || '');
+export const PAGE_URL             = cleanUrl(process.env.PAGE_URL       || env.PAGE_URL       || shared.PAGE_URL      || '');
 export const CONFIDENCE_THRESHOLD = parseFloat(process.env.CONFIDENCE_THRESHOLD || env.CONFIDENCE_THRESHOLD || '0.45');
 export const REQUEST_TIMEOUT_MS   = 180_000;
 

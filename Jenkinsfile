@@ -20,8 +20,8 @@ pipeline {
                         def content = readFile(file: env.URLS_FILE, encoding: 'UTF-8')
                         def cleanContent = content.charAt(0) == '\uFEFF' ? content.substring(1) : content
                         def urls = new groovy.json.JsonSlurper().parseText(cleanContent)
-                        env.PAGE_URL = urls.page_url
-                        env.COLAB_API_URL = urls.api_url
+                        env.PAGE_URL = urls.page_url ? "${urls.page_url.replaceAll('/+$', '')}/arcane-shop.html" : ''
+                        env.COLAB_API_URL = urls.api_url ?: ''
                         echo "PAGE_URL=${env.PAGE_URL}"
                         echo "COLAB_API_URL=${env.COLAB_API_URL}"
                     } else {
