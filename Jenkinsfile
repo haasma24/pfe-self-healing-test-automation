@@ -16,17 +16,35 @@ pipeline {
         stage('Load URLs') {
             steps {
                 script {
+                    // 1. Read tunnel URL from SSH log (always the latest, even after reconnect)
+                    def tunnelLog = 'C:/ProgramData/pfe-tunnel.log'
+                    def pageUrl = ''
+                    if (fileExists(tunnelLog)) {
+                        def logContent = readFile(file: tunnelLog, encoding: 'UTF-8')
+                        def cleanLog = logContent.charAt(0) == '\uFEFF' ? logContent.substring(1) : logContent
+                        // Match the LAST occurrence (in case SSH reconnected)
+                        def urls = (cleanLog =~ /https:\/\/([a-z0-9.-]+)\.lhr\.life/)
+                        if (urls.size() > 0) {
+                            pageUrl = urls[urls.size() - 1][0] + '/arcane-shop.html'
+                        }
+                    }
+                    if (!pageUrl) {
+                        error "Tunnel URL not found in ${tunnelLog}. Run start.ps1 first."
+                    }
+                    env.PAGE_URL = pageUrl
+                    echo "PAGE_URL=${env.PAGE_URL}"
+
+                    // 2. Read API URL from shared config (stable, preserved across restarts)
                     if (fileExists(env.URLS_FILE)) {
                         def content = readFile(file: env.URLS_FILE, encoding: 'UTF-8')
                         def cleanContent = content.charAt(0) == '\uFEFF' ? content.substring(1) : content
                         def urls = new groovy.json.JsonSlurper().parseText(cleanContent)
-                        env.PAGE_URL = urls.page_url ? "${urls.page_url.replaceAll('/+$', '')}/arcane-shop.html" : ''
                         env.COLAB_API_URL = urls.api_url ?: ''
-                        echo "PAGE_URL=${env.PAGE_URL}"
-                        echo "COLAB_API_URL=${env.COLAB_API_URL}"
-                    } else {
-                        error "${env.URLS_FILE} not found. Run config/start-infra.ps1 before pipeline."
                     }
+                    if (!env.COLAB_API_URL) {
+                        error "API URL not found in ${env.URLS_FILE}. Run start.ps1 first."
+                    }
+                    echo "COLAB_API_URL=${env.COLAB_API_URL}"
                 }
             }
         }
@@ -35,10 +53,9 @@ pipeline {
             steps {
                 dir('test-runner') {
                     powershell """
-                        \$urls = Get-Content '${env.URLS_FILE}' -Raw | ConvertFrom-Json
                         @"
-        COLAB_API_URL=\$(\$urls.api_url)
-        PAGE_URL=\$(\$urls.page_url)/arcane-shop.html
+        COLAB_API_URL=${env.COLAB_API_URL}
+        PAGE_URL=${env.PAGE_URL}
         CONFIDENCE_THRESHOLD=${env.CONFIDENCE_THRESHOLD}
 "@ | Set-Content .env.healing -Encoding UTF8
                     """

@@ -15,7 +15,7 @@ $shopDir = Join-Path $PSScriptRoot "..\shop"
 $shopJob = Start-Process -FilePath $pythonExe -ArgumentList "-m http.server 8085" -WorkingDirectory $shopDir -NoNewWindow -PassThru -RedirectStandardOutput "$env:ProgramData\pfe-shop.log"
 
 # 2. Start SSH tunnel and capture URL
-$sshJob = Start-Process -FilePath "C:\WINDOWS\System32\OpenSSH\ssh.exe" -ArgumentList "-o StrictHostKeyChecking=no -R 80:localhost:8085 localhost.run" -NoNewWindow -PassThru -RedirectStandardOutput "$env:ProgramData\pfe-tunnel.log"
+$sshJob = Start-Process -FilePath "C:\WINDOWS\System32\OpenSSH\ssh.exe" -ArgumentList "-o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -R 80:localhost:8085 localhost.run" -NoNewWindow -PassThru -RedirectStandardOutput "$env:ProgramData\pfe-tunnel.log"
 
 # Save PIDs
 $shopJob.Id, $sshJob.Id | Out-File -FilePath $pidFile -Encoding UTF8

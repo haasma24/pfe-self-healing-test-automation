@@ -28,7 +28,7 @@ Write-Host "[1/4] Python OK"
 
 # 2. Start shop server (if shop directory exists)
 $shopDir = Join-Path $PSScriptRoot "shop"
-$shopLog = "$env:TEMP\pfe-shop.log"
+$shopLog = "$env:ProgramData\pfe-shop.log"
 $shopJob = $null
 if (Test-Path $shopDir) {
     $shopJob = Get-Process -Name python -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -match "8085" }
@@ -48,10 +48,9 @@ $tunnelUrl = $null
 $sshProcess = Get-Process -Name ssh -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -match "localhost.run" }
 if (-not $sshProcess) {
     Write-Host "[3/4] SSH tunnel starting..."
-    $sshLog = "$env:TEMP\pfe-tunnel.log"
-    # Use cmd.exe piping to force line-buffered writes (2>&1 merges stderr into stdout)
+    $sshLog = "$env:ProgramData\pfe-tunnel.log"
     $sshExe = "C:\WINDOWS\System32\OpenSSH\ssh.exe"
-    $sshArgs = "-o StrictHostKeyChecking=no -R 80:localhost:8085 localhost.run"
+    $sshArgs = "-o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -R 80:localhost:8085 localhost.run"
     Start-Process -FilePath "cmd.exe" -ArgumentList "/c `"$sshExe $sshArgs > $sshLog 2>&1`"" -WindowStyle Hidden -PassThru -OutVariable sshProcess
     Write-Host "  waiting for URL (PID: $($sshProcess.Id))..."
     $timeout = 60
@@ -71,6 +70,16 @@ if (-not $sshProcess) {
     Write-Host "  Tunnel URL: $tunnelUrl"
 } else {
     Write-Host "[3/4] SSH tunnel already running (PID: $($sshProcess.Id))"
+    $sshLog = "$env:ProgramData\pfe-tunnel.log"
+    $content = Get-Content $sshLog -Raw -ErrorAction SilentlyContinue
+    if ($content -match '(?s).*?(https://([a-z0-9.-]+)\.lhr\.life)') {
+        $tunnelUrl = $matches[1]
+    }
+    if (-not $tunnelUrl) {
+        Write-Warning "Could not extract tunnel URL from log."
+    } else {
+        Write-Host "  Tunnel URL: $tunnelUrl"
+    }
 }
 
 # 4. API URL : garder la precedente si stable, sinon detecter/demander
