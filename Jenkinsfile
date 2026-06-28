@@ -23,9 +23,12 @@ pipeline {
                         def logContent = readFile(file: tunnelLog, encoding: 'UTF-8')
                         def cleanLog = logContent.charAt(0) == '\uFEFF' ? logContent.substring(1) : logContent
                         // Match the LAST occurrence (in case SSH reconnected)
-                        def urls = (cleanLog =~ /https:\/\/([a-z0-9.-]+)\.lhr\.life/)
-                        if (urls.size() > 0) {
-                            pageUrl = urls[urls.size() - 1][0] + '/arcane-shop.html'
+                        def matcher = cleanLog =~ /https:\/\/([a-z0-9.-]+)\.lhr\.life/
+                        while (matcher.find()) {
+                            pageUrl = matcher.group(0)
+                        }
+                        if (pageUrl) {
+                            pageUrl += '/arcane-shop.html'
                         }
                     }
                     if (!pageUrl) {
