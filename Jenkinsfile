@@ -143,10 +143,10 @@ pipeline {
         stage('Archive & Publish Reports') {
             steps {
                 dir('dashboard') {
-                    bat 'tar -czf ../dashboard-build.tar.gz dist/'
+                    powershell 'Compress-Archive -Path dist\\* -DestinationPath ..\\dashboard-build.zip -Force'
                 }
                 archiveArtifacts artifacts: '''
-                    dashboard-build.tar.gz,
+                    dashboard-build.zip,
                     test-runner/eval/reports/*.json
                 ''', fingerprint: true
             }
