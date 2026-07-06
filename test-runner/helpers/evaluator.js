@@ -189,7 +189,7 @@ export function matchesExpected(element, expected) {
 // ─────────────────────────────────────────────────────────────────────────────
 //  RUN SCENARIO
 // ─────────────────────────────────────────────────────────────────────────────
-export async function runScenario(scenarioPath) {
+export async function runScenario(scenarioPath, options = {}) {
   const scenario = JSON.parse(fs.readFileSync(scenarioPath, 'utf8').replace(/^\uFEFF/, ''));
   // Use scenario URL as fallback if config PAGE_URL is empty
   const activeUrl = (PAGE_URL || scenario.url || '').replace(/\/+$/, '');
@@ -210,11 +210,20 @@ export async function runScenario(scenarioPath) {
     const t0      = Date.now();
 
     try {
-      apiResult = await healSelector({
+      /*apiResult = await healSelector({
         url:                  activeUrl,
         brokenSelector:       c.broken_selector,
         baselineText:         c.baseline_text || undefined,
         confidenceThreshold:  c.confidence_threshold ?? 0.70,
+        skipStages:           options.skipStages,
+      });*/
+      apiResult = await healSelector({
+      url:                  activeUrl,
+      brokenSelector:       c.broken_selector,
+      baselineText:         c.baseline_text || undefined,
+      confidenceThreshold:  c.confidence_threshold ?? 0.70,
+      skipStages:           options.skipStages,
+      clickBefore:          c.click_before || undefined,
       });
     } catch (e) {
       error = e.message;

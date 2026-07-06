@@ -14,7 +14,7 @@ const __dirname  = path.dirname(__filename);
 /**
  * Calls the Colab /heal endpoint.
  */
-export async function healSelector({ url, brokenSelector, baselineText, confidenceThreshold }) {
+export async function healSelector({ url, brokenSelector, baselineText, confidenceThreshold, skipStages }) {
   if (!COLAB_API_URL) {
     console.warn('[Healer]   COLAB_API_URL missing — auto-heal disabled');
     return null;
@@ -30,6 +30,7 @@ export async function healSelector({ url, brokenSelector, baselineText, confiden
     confidence_threshold: confidenceThreshold ?? CONFIDENCE_THRESHOLD,
   };
   if (baselineText) payload.baseline_text = baselineText;
+  if (skipStages && Array.isArray(skipStages) && skipStages.length > 0) payload.skip_stages = skipStages;
 
   const body = JSON.stringify(payload);
 

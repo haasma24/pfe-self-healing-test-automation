@@ -23,6 +23,7 @@ const args        = process.argv.slice(2);
 const reportFlag  = args.indexOf('--report');
 const fromFlag    = args.indexOf('--from');
 const compareFlag = args.indexOf('--compare');
+const quickFlag   = args.includes('--quick');
 
 const reportDir   = reportFlag  !== -1 ? args[reportFlag + 1]  : path.resolve(__dirname, '../eval/reports');
 const fromFile    = fromFlag    !== -1 ? args[fromFlag + 1]    : null;
@@ -90,11 +91,14 @@ async function main() {
       process.exit(1);
     }
 
+    const opts = quickFlag ? { skipStages: ['ssim', 'cnn'] } : {};
+    if (quickFlag) console.log('  ⚡ Quick mode: SSIM and CNN stages skipped\n');
+
     console.log(`\n[Metrics] Running ${files.length} scenario file(s)...\n`);
 
     for (const file of files) {
       const t0      = Date.now();
-      const raw     = await runScenario(file);
+      const raw     = await runScenario(file, opts);
       const elapsed = Date.now() - t0;
 
       const withTiming = raw.map(r => ({
