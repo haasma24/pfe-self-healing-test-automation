@@ -44,7 +44,7 @@ export class Sidebar implements OnInit, OnDestroy {
   get statusLabel(): string {
     if (this.isUploadMode) return 'Offline Mode';
     if (this.isConnected)  return 'Engine Online';
-    return 'Connecting…';
+    return 'Connecting...';
   }
 
   get statusOnline(): boolean {

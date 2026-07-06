@@ -4,12 +4,11 @@ import { Subscription } from 'rxjs';
 import { DashboardService } from '../../services/dashboard.service';
 import { AnalyticsResponse } from '../../models/pipeline.model';
 import { ReplacePipe } from '../../shared/pipes/replace.pipe';
-import { DonutChart } from '../../shared/charts/charts';
 
 @Component({
   selector: 'app-history',
   standalone: true,
-  imports: [CommonModule, ReplacePipe, DonutChart],
+  imports: [CommonModule, ReplacePipe],
   templateUrl: './history.html',
   styleUrl: './history.scss'
 })

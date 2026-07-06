@@ -7,10 +7,6 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/dashboard/dashboard').then(m => m.Dashboard)
   },
   {
-    path: 'overview',
-    loadComponent: () => import('./pages/dashboard/dashboard').then(m => m.Dashboard)
-  },
-  {
     path: 'pipeline',
     loadComponent: () => import('./pages/pipeline/pipeline').then(m => m.Pipeline)
   },

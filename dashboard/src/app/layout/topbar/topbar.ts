@@ -3,15 +3,18 @@ import { Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter, Subscription } from 'rxjs';
 import { DashboardService } from '../../services/dashboard.service';
+import { ThemeService } from '../../services/theme.service';
 import { SystemMetrics } from '../../models/pipeline.model';
 
 const ROUTE_META: Record<string, { title: string; crumb: string }> = {
-  '/overview':        { title: 'Overview',       crumb: 'Dashboard' },
-  '/pipeline':        { title: 'Pipeline',        crumb: 'Stage Details' },
-  '/broken-locators': { title: 'Locators',        crumb: 'Healing Report' },
-  '/upload':          { title: 'Load Run',         crumb: 'Offline Analysis' },
-  '/configuration':   { title: 'Configuration',   crumb: 'Parameters' },
-  '/export':          { title: 'Export',           crumb: 'Download Results' },
+  '/dashboard':       { title: 'Dashboard',     crumb: 'Overview' },
+  '/dashboard/':      { title: 'Dashboard',     crumb: 'Overview' },
+  '/pipeline':        { title: 'Pipeline',      crumb: 'Stage Details' },
+  '/broken-locators': { title: 'Locators',      crumb: 'Healing Report' },
+  '/history':         { title: 'History',       crumb: 'All Runs' },
+  '/upload':          { title: 'Load Run',       crumb: 'Offline Analysis' },
+  '/configuration':   { title: 'Configuration', crumb: 'Parameters' },
+  '/export':          { title: 'Export',         crumb: 'Download Results' },
 };
 
 @Component({
@@ -25,16 +28,21 @@ export class Topbar implements OnInit, OnDestroy {
 
   @Output() toggleSidebar = new EventEmitter<void>();
 
-  title = 'Overview';
-  crumb = 'Dashboard';
+  title = 'Dashboard';
+  crumb = 'Overview';
 
   system: SystemMetrics | null = null;
   isUploadMode = false;
   isConnected = false;
+  isDarkMode = false;
 
   private subs: Subscription[] = [];
 
-  constructor(private router: Router, private dash: DashboardService) {}
+  constructor(
+    private router: Router,
+    private dash: DashboardService,
+    private theme: ThemeService
+  ) {}
 
   ngOnInit(): void {
     this.updateRouteMeta(this.router.url);
@@ -50,7 +58,8 @@ export class Topbar implements OnInit, OnDestroy {
       }),
 
       this.dash.source$.subscribe(s => this.isUploadMode = s === 'upload'),
-      this.dash.connected$.subscribe(v => this.isConnected = v ?? false)
+      this.dash.connected$.subscribe(v => this.isConnected = v ?? false),
+      this.theme.darkMode$.subscribe(v => this.isDarkMode = v)
     );
   }
 
@@ -60,6 +69,10 @@ export class Topbar implements OnInit, OnDestroy {
     const m = ROUTE_META[url] ?? { title: 'ARCANE', crumb: '' };
     this.title = m.title;
     this.crumb = m.crumb;
+  }
+
+  toggleTheme(): void {
+    this.theme.toggle();
   }
 
   onSimulate(): void {

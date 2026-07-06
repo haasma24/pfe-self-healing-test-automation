@@ -4,17 +4,19 @@ import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 import {
-  TimelineChart, DonutChart, GaugeChart, FunnelChart, ScoreDistribution
+  TimelineChart, GaugeChart, FunnelChart, ScoreDistribution
 } from '../../shared/charts/charts';
 import { DashboardService } from '../../services/dashboard.service';
 import { DashboardResponse, Candidate, LocatorResult } from '../../models/pipeline.model';
+
+type Tab = 'overview' | 'candidates' | 'traceability';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [
     CommonModule, FormsModule,
-    TimelineChart, DonutChart, GaugeChart, FunnelChart, ScoreDistribution
+    TimelineChart, GaugeChart, FunnelChart, ScoreDistribution
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
@@ -29,9 +31,12 @@ export class Dashboard implements OnInit, OnDestroy {
   urlSaved = false;
   showSetup = true;
 
+  activeTab: Tab = 'overview';
+
   zoomImage: string | null = null;
   imgError = { annotated: false, baseline: false };
   candidateZoom: Candidate | null = null;
+  lastUpdated: string | null = null;
 
   private subs: Subscription[] = [];
 
@@ -45,6 +50,7 @@ export class Dashboard implements OnInit, OnDestroy {
       this.dash.getDashboardStream().subscribe(d => {
         this.data = d;
         this.loading = false;
+        this.lastUpdated = new Date().toLocaleTimeString();
       }),
       this.dash.hasUrl$.subscribe(v => {
         this.hasUrl = v;
@@ -60,6 +66,8 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void { this.subs.forEach(s => s.unsubscribe()); }
+
+  setTab(tab: Tab): void { this.activeTab = tab; }
 
   saveUrl(): void {
     if (!this.inlineUrl.trim()) return;
@@ -98,9 +106,9 @@ export class Dashboard implements OnInit, OnDestroy {
 
   get verdict(): string {
     const score = this.data?.lastRunDetails?.bestScore ?? 0;
-    if (score >= 0.8) return '✓ SUCCESSFULLY HEALED';
-    if (score >= 0.5) return '⚠ LOW CONFIDENCE';
-    return '✗ HEAL FAILED';
+    if (score >= 0.8) return 'Successfully Healed';
+    if (score >= 0.5) return 'Low Confidence';
+    return 'Heal Failed';
   }
 
   get verdictClass(): string {

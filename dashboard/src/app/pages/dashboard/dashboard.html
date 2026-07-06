@@ -1,8 +1,8 @@
-<!-- Setup Banner -->
+<!-- Setup Overlay -->
 <div class="setup-overlay" *ngIf="showSetup">
   <div class="setup-card anim-scale">
     <div class="setup-icon">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
         <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
       </svg>
     </div>
@@ -24,7 +24,7 @@
 </div>
 
 <!-- Loading State -->
-<div class="dashboard loading-skeleton" *ngIf="loading && !showSetup && connected === undefined">
+<div class="dash-loading" *ngIf="loading && !showSetup && connected === undefined">
   <div class="kpi-grid">
     <div class="kpi-card" *ngFor="let _ of [1,2,3,4]">
       <div class="skeleton skeleton-title"></div>
@@ -33,14 +33,10 @@
     </div>
   </div>
   <div class="section-grid">
-    <div class="card"><div class="skeleton skeleton-chart" style="height:160px;margin:16px"></div></div>
-    <div class="card"><div class="skeleton skeleton-chart" style="height:160px;margin:16px"></div></div>
+    <div class="card"><div class="skeleton skeleton-chart" style="height:180px;margin:20px"></div></div>
+    <div class="card"><div class="skeleton skeleton-chart" style="height:180px;margin:20px"></div></div>
   </div>
-  <div class="section-grid">
-    <div class="card"><div class="skeleton skeleton-chart" style="height:140px;margin:16px"></div></div>
-    <div class="card"><div class="skeleton skeleton-chart" style="height:140px;margin:16px"></div></div>
-  </div>
-  <div style="text-align:center;color:var(--text-tertiary);font-size:12px;margin-top:-8px;">Loading pipeline data...</div>
+  <div class="loading-state"><div class="spinner"></div><span>Loading pipeline data...</span></div>
 </div>
 
 <!-- Disconnected State -->
@@ -59,286 +55,370 @@
 <!-- Main Dashboard -->
 <div class="dashboard anim-fade" *ngIf="data && !loading && !showSetup">
 
-  <!-- KPI Cards -->
-  <div class="kpi-grid stagger">
-    <div class="kpi-card" *ngFor="let kpi of [
-      { label: 'Best Score', value: (data.lastRunDetails.bestScore | number:'1.3-3') ?? '—', sub: 'Fused confidence', color: 'var(--green)', icon: 'star' },
-      { label: 'Candidates', value: data.lastRunDetails.totalCandidates, sub: data.lastRunDetails.funnel.length + ' stages', color: 'var(--accent)', icon: 'list' },
-      { label: 'Confidence Gap', value: (data.lastRunDetails.confidenceGap | number:'1.3-3') ?? '—', sub: 'Winner margin', color: 'var(--amber)', icon: 'gap' },
-      { label: 'Healed / Failed', value: (data.stats.total_attempts - data.stats.failed_heals) + '/' + data.stats.failed_heals, sub: 'Total healing attempts', color: 'var(--blue)', icon: 'activity' }
-    ]" class="anim-slide">
-      <div class="kpi-header">
-        <span class="kpi-icon" *ngIf="kpi.icon === 'star'">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        </span>
-        <span class="kpi-icon" *ngIf="kpi.icon === 'list'">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-        </span>
-        <span class="kpi-icon" *ngIf="kpi.icon === 'gap'">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
-        </span>
-        <span class="kpi-icon" *ngIf="kpi.icon === 'activity'">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        </span>
-        <span class="kpi-label">{{ kpi.label }}</span>
-      </div>
-      <div class="kpi-value" [style.color]="kpi.color">{{ kpi.value }}</div>
-      <div class="kpi-sub">{{ kpi.sub }}</div>
+  <!-- Last Updated Indicator -->
+  <div class="dash-topbar">
+    <div class="dash-connection">
+      <span class="dash-dot" [class.online]="connected"></span>
+      <span class="dash-status">{{ connected ? 'Engine Online' : 'Disconnected' }}</span>
+      <span class="dash-updated" *ngIf="lastUpdated">Updated {{ lastUpdated }}</span>
+    </div>
+    <div class="dash-health" *ngIf="data.lastRunDetails.bestScore > 0">
+      <span class="tag" [class.tag--green]="data.lastRunDetails.bestScore >= 0.8"
+            [class.tag--amber]="data.lastRunDetails.bestScore >= 0.5 && data.lastRunDetails.bestScore < 0.8"
+            [class.tag--red]="data.lastRunDetails.bestScore < 0.5">
+        {{ verdict }}
+      </span>
     </div>
   </div>
 
-  <!-- Row 1: Confidence Gauge + Pipeline Report -->
-  <div class="section-grid">
-    <!-- Confidence Gauge -->
-    <div class="card anim-slide">
-      <div class="card-header">
-        <span class="card-title">Fused Confidence</span>
-        <span class="card-sub">Best score</span>
+  <!-- KPI Cards -->
+  <div class="kpi-grid stagger">
+    <div class="kpi-card" style="--kpi-color: var(--green); --kpi-bg: var(--emerald-bg);">
+      <div class="kpi-header">
+        <span class="kpi-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </span>
+        <span class="kpi-label">Best Score</span>
       </div>
-      <div class="card-body" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 22px;">
-        <app-gauge [value]="data.lastRunDetails.bestScore" [color]="scoreColor(data.lastRunDetails.bestScore)" [label]="'Best Score'" [verdict]="verdict" [verdictClass]="verdictClass"></app-gauge>
-        <div class="signal-bars" *ngIf="signalScores.length" style="width:100%;margin-top:8px;">
-          <div class="bar-row" *ngFor="let s of signalScores; trackBy: trackBySignal" style="margin-bottom:6px;">
-            <span class="bar-label" style="width:100px;font-size:10px;">{{ s.label }}</span>
-            <div class="bar-track" style="height:18px;"><div class="bar-fill" [style.width.%]="s.score * 100" [style.background]="s.color"><span class="bar-val" style="font-size:9px;">{{ s.score | number:'1.3-3' }}</span></div></div>
+      <div class="kpi-value">{{ data.lastRunDetails.bestScore | number:'1.3-3' }}</div>
+      <div class="kpi-sub">Fused confidence score</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color: var(--accent); --kpi-bg: var(--purple-bg);">
+      <div class="kpi-header">
+        <span class="kpi-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </span>
+        <span class="kpi-label">Candidates</span>
+      </div>
+      <div class="kpi-value">{{ data.lastRunDetails.totalCandidates }}</div>
+      <div class="kpi-sub">{{ data.lastRunDetails.funnel.length }} pipeline stages</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color: var(--amber); --kpi-bg: var(--amber-bg);">
+      <div class="kpi-header">
+        <span class="kpi-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+        </span>
+        <span class="kpi-label">Confidence Gap</span>
+      </div>
+      <div class="kpi-value">{{ data.lastRunDetails.confidenceGap | number:'1.3-3' }}</div>
+      <div class="kpi-sub">Winner margin over runner-up</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color: var(--blue); --kpi-bg: var(--blue-bg);">
+      <div class="kpi-header">
+        <span class="kpi-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </span>
+        <span class="kpi-label">Healed / Failed</span>
+      </div>
+      <div class="kpi-value">{{ data.stats.total_attempts - data.stats.failed_heals }}/{{ data.stats.failed_heals }}</div>
+      <div class="kpi-sub">{{ healRate }}% success rate</div>
+    </div>
+  </div>
+
+  <!-- Section Tabs -->
+  <div class="dash-tabs">
+    <button class="dash-tab" [class.active]="activeTab === 'overview'" (click)="setTab('overview')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Overview
+    </button>
+    <button class="dash-tab" [class.active]="activeTab === 'candidates'" (click)="setTab('candidates')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Candidates
+    </button>
+    <button class="dash-tab" [class.active]="activeTab === 'traceability'" (click)="setTab('traceability')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      Traceability
+    </button>
+  </div>
+
+  <!-- Tab: Overview -->
+  <div class="tab-content" *ngIf="activeTab === 'overview'">
+
+    <div class="section-grid">
+      <div class="card anim-slide">
+        <div class="card-header">
+          <span class="card-title">Fused Confidence</span>
+          <span class="card-sub">Best score</span>
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 22px;">
+          <app-gauge [value]="data.lastRunDetails.bestScore" [color]="scoreColor(data.lastRunDetails.bestScore)" [label]="'Best Score'" [verdict]="verdict" [verdictClass]="verdictClass"></app-gauge>
+          <div class="signal-bars" *ngIf="signalScores.length" style="width:100%;margin-top:8px;">
+            <div class="bar-row" *ngFor="let s of signalScores; trackBy: trackBySignal" style="margin-bottom:6px;">
+              <span class="bar-label" style="width:100px;font-size:10px;">{{ s.label }}</span>
+              <div class="bar-track" style="height:18px;"><div class="bar-fill" [style.width.%]="s.score * 100" [style.background]="s.color"><span class="bar-val" style="font-size:9px;">{{ s.score | number:'1.3-3' }}</span></div></div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Pipeline Funnel -->
-    <div class="card anim-slide">
-      <div class="card-header">
-        <span class="card-title">Pipeline Funnel</span>
-        <span class="card-sub">{{ data.lastRunDetails.funnel.map(f => f.name).join(' → ') }}</span>
-      </div>
-      <div class="card-body" style="padding:16px 22px;">
-        <app-funnel-chart [stages]="funnelData"></app-funnel-chart>
-        <div class="stage-timings" *ngIf="stageTimingData.length">
-          <div class="timing-label">Stage Timings</div>
-          <div class="timing-bars">
-            <div class="timing-col" *ngFor="let t of stageTimingData; let i = index; trackBy: trackByTiming">
-              <div class="timing-bar-fill" [style.height.%]="(t / stageTimingMax) * 80 + 20"
-                [style.background]="stageColors[i % stageColors.length]"
-                [title]="(data.lastRunDetails.funnel[i]?.name ?? 'Stage') + ': ' + (t | number:'1.2-2') + 's'">
+      <div class="card anim-slide">
+        <div class="card-header">
+          <span class="card-title">Pipeline Funnel</span>
+          <span class="card-sub">{{ data.lastRunDetails.funnel.map(f => f.name).join(' → ') }}</span>
+        </div>
+        <div class="card-body" style="padding:16px 22px;">
+          <app-funnel-chart [stages]="funnelData"></app-funnel-chart>
+          <div class="stage-timings" *ngIf="stageTimingData.length">
+            <div class="timing-label">Stage Timings</div>
+            <div class="timing-bars">
+              <div class="timing-col" *ngFor="let t of stageTimingData; let i = index; trackBy: trackByTiming">
+                <div class="timing-bar-fill" [style.height.%]="(t / stageTimingMax) * 80 + 20"
+                  [style.background]="stageColors[i % stageColors.length]"
+                  [title]="(data.lastRunDetails.funnel[i]?.name ?? 'Stage') + ': ' + (t | number:'1.2-2') + 's'">
+                </div>
+                <div class="timing-val">{{ t | number:'1.1-1' }}</div>
               </div>
-              <div class="timing-val">{{ t | number:'1.1-1' }}</div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Row 2: Score Distribution + Top Candidates -->
-  <div class="section-grid">
-    <!-- Score Distribution -->
-    <div class="card anim-slide">
-      <div class="card-header">
-        <span class="card-title">Score Distribution</span>
-        <span class="card-sub">{{ data.lastRunDetails.totalCandidates }} candidates</span>
-      </div>
-      <div class="card-body" *ngIf="scoreBars.length; else noScores">
-        <app-score-distribution [data]="scoreBars"></app-score-distribution>
-        <div class="score-stats" *ngIf="data.lastRunDetails.candidates.length">
-          <div class="score-stat">
-            <span class="score-stat-val" style="color:var(--green)">{{ (data.lastRunDetails.candidates.filter(c => c.blendedScore >= 0.8).length) }}</span>
-            <span class="score-stat-lbl">≥ 0.8</span>
-          </div>
-          <div class="score-stat">
-            <span class="score-stat-val" style="color:var(--accent)">{{ (data.lastRunDetails.candidates.filter(c => c.blendedScore >= 0.6 && c.blendedScore < 0.8).length) }}</span>
-            <span class="score-stat-lbl">0.6–0.8</span>
-          </div>
-          <div class="score-stat">
-            <span class="score-stat-val" style="color:var(--amber)">{{ (data.lastRunDetails.candidates.filter(c => c.blendedScore >= 0.4 && c.blendedScore < 0.6).length) }}</span>
-            <span class="score-stat-lbl">0.4–0.6</span>
-          </div>
-          <div class="score-stat">
-            <span class="score-stat-val" style="color:var(--red)">{{ (data.lastRunDetails.candidates.filter(c => c.blendedScore < 0.4).length) }}</span>
-            <span class="score-stat-lbl">&lt; 0.4</span>
+    <div class="section-grid">
+      <div class="card anim-slide">
+        <div class="card-header">
+          <span class="card-title">Score Distribution</span>
+          <span class="card-sub">{{ data.lastRunDetails.totalCandidates }} candidates</span>
+        </div>
+        <div class="card-body" *ngIf="scoreBars.length; else noScores">
+          <app-score-distribution [data]="scoreBars"></app-score-distribution>
+          <div class="score-stats" *ngIf="data.lastRunDetails.candidates.length">
+            <div class="score-stat">
+              <span class="score-stat-val" style="color:var(--green)">{{ (data.lastRunDetails.candidates.filter(c => c.blendedScore >= 0.8).length) }}</span>
+              <span class="score-stat-lbl">≥ 0.8</span>
+            </div>
+            <div class="score-stat">
+              <span class="score-stat-val" style="color:var(--accent)">{{ (data.lastRunDetails.candidates.filter(c => c.blendedScore >= 0.6 && c.blendedScore < 0.8).length) }}</span>
+              <span class="score-stat-lbl">0.6–0.8</span>
+            </div>
+            <div class="score-stat">
+              <span class="score-stat-val" style="color:var(--amber)">{{ (data.lastRunDetails.candidates.filter(c => c.blendedScore >= 0.4 && c.blendedScore < 0.6).length) }}</span>
+              <span class="score-stat-lbl">0.4–0.6</span>
+            </div>
+            <div class="score-stat">
+              <span class="score-stat-val" style="color:var(--red)">{{ (data.lastRunDetails.candidates.filter(c => c.blendedScore < 0.4).length) }}</span>
+              <span class="score-stat-lbl">&lt; 0.4</span>
+            </div>
           </div>
         </div>
+        <ng-template #noScores><div class="empty-state" style="padding:32px">No run data yet</div></ng-template>
       </div>
-      <ng-template #noScores><div class="empty-state">No run data yet</div></ng-template>
+
+      <div class="card anim-slide">
+        <div class="card-header">
+          <span class="card-title">Top Candidates</span>
+          <span class="card-sub" *ngIf="winner['id']">Best: {{ winner['id'] }}</span>
+        </div>
+        <div class="table-wrap" *ngIf="topCandidates.length; else noCands">
+          <table>
+            <thead><tr><th>#</th><th>Locator</th><th>Type</th><th>Score</th><th>Stability</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let c of topCandidates; let i = index; trackBy: trackByCandidate" [class.winner-row]="i === 0">
+                <td><span class="rank" [class.rank--1]="i === 0" [class.rank--n]="i > 0">{{ i + 1 }}</span></td>
+                <td style="font-family:var(--mono);font-size:11px;color:var(--text-primary);">{{ c.id }}</td>
+                <td><span class="tag" [class]="locatorTypeClass(c.locatorType)">{{ c.locatorType }}</span></td>
+                <td>
+                  <div class="candidate-score-bar">
+                    <div class="candidate-score-fill" [style.width.%]="c.blendedScore * 100" [style.background]="scoreColor(c.blendedScore)"></div>
+                    <span class="candidate-score-val">{{ c.blendedScore | number:'1.3-3' }}</span>
+                  </div>
+                </td>
+                <td><span class="tag" [class]="stabilityClass(c.stability)">{{ c.stability }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #noCands><div class="empty-state">Run the pipeline to see candidates</div></ng-template>
+      </div>
     </div>
 
-    <!-- Top Candidates -->
-    <div class="card anim-slide">
-      <div class="card-header">
-        <span class="card-title">Top Candidates</span>
-        <span class="card-sub" *ngIf="winner['id']">Best: {{ winner['id'] }}</span>
+    <div class="section-grid">
+      <div class="card anim-slide">
+        <div class="card-header">
+          <span class="card-title">Confidence Timeline</span>
+          <span class="card-sub">Last {{ timelineData.length }} runs</span>
+        </div>
+        <div class="card-body" *ngIf="timelineData.length >= 2; else noTimeline">
+          <app-timeline-chart [data]="timelineData" color="var(--accent)" [height]="90" [width]="350"></app-timeline-chart>
+        </div>
+        <ng-template #noTimeline><div class="empty-state" style="padding:32px">Insufficient history data</div></ng-template>
       </div>
-      <div class="table-wrap" *ngIf="topCandidates.length; else noCands">
+
+      <div class="card anim-slide">
+        <div class="card-header">
+          <span class="card-title">Healing History</span>
+          <span class="card-sub">{{ history.length }} recent entries</span>
+        </div>
+        <div class="table-wrap short-table" *ngIf="history.length; else noHistory">
+          <table>
+            <thead><tr><th>Time</th><th>Broken</th><th>Healed</th><th>Confidence</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let h of history.slice(0, 8); trackBy: trackByHistory">
+                <td style="font-size:10px;color:var(--text-tertiary);font-family:var(--mono);">{{ h.ts | date:'HH:mm:ss' }}</td>
+                <td style="font-family:var(--mono);font-size:10px;color:var(--red);max-width:140px;overflow:hidden;text-overflow:ellipsis;" title="{{ h.brokenSelector }}">{{ h.brokenSelector }}</td>
+                <td style="font-family:var(--mono);font-size:10px;color:var(--green);max-width:140px;overflow:hidden;text-overflow:ellipsis;" title="{{ h.healedSelector }}">{{ h.healedSelector || '—' }}</td>
+                <td>
+                  <div class="candidate-score-bar" style="width:70px;">
+                    <div class="candidate-score-fill" [style.width.%]="(h.confidence || 0) * 100" [style.background]="scoreColor(h.confidence || 0)"></div>
+                  </div>
+                </td>
+                <td><span class="tag" [class.tag--green]="h.status === 'healed'" [class.tag--red]="h.status !== 'healed'">{{ h.status }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #noHistory><div class="empty-state" style="padding:24px">No history yet</div></ng-template>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Tab: Candidates -->
+  <div class="tab-content" *ngIf="activeTab === 'candidates'">
+    <div class="section-grid">
+      <div class="card anim-slide">
+        <div class="card-header">
+          <span class="card-title">Score Distribution</span>
+          <span class="card-sub">{{ data.lastRunDetails.totalCandidates }} candidates</span>
+        </div>
+        <div class="card-body" *ngIf="scoreBars.length; else noScores">
+          <app-score-distribution [data]="scoreBars"></app-score-distribution>
+        </div>
+        <ng-template #noScores><div class="empty-state" style="padding:32px">No run data yet</div></ng-template>
+      </div>
+
+      <div class="card anim-slide">
+        <div class="card-header">
+          <span class="card-title">Layer Scores</span>
+          <span class="card-sub">Per-signal breakdown</span>
+        </div>
+        <div class="card-body" *ngIf="signalScores.length; else noLayers">
+          <div class="bar-row" *ngFor="let s of signalScores; trackBy: trackBySignal" style="margin-bottom:8px;">
+            <span class="bar-label">{{ s.label }}</span>
+            <div class="bar-track"><div class="bar-fill" [style.width.%]="s.score * 100" [style.background]="s.color"><span class="bar-val">{{ s.score | number:'1.3-3' }}</span></div></div>
+          </div>
+        </div>
+        <ng-template #noLayers><div class="empty-state" style="padding:32px">No layer data available</div></ng-template>
+      </div>
+    </div>
+
+    <div class="card anim-slide" *ngIf="data.lastRunDetails.candidates.length">
+      <div class="card-header">
+        <span class="card-title">All Candidates</span>
+        <span class="card-sub">{{ data.lastRunDetails.candidates.length }} ranked</span>
+      </div>
+      <div class="table-wrap">
         <table>
-          <thead><tr><th>#</th><th>Locator</th><th>Type</th><th>Score</th><th>Stability</th></tr></thead>
+          <thead><tr><th>#</th><th>Locator</th><th>Type</th><th>Blended</th><th>Semantic</th><th>Contextual</th><th>TF-IDF</th><th>SSIM</th><th>Stability</th></tr></thead>
           <tbody>
-            <tr *ngFor="let c of topCandidates; let i = index; trackBy: trackByCandidate" [class.winner-row]="i === 0">
-              <td>
-                <span class="rank" [class.rank--1]="i === 0" [class.rank--n]="i > 0">{{ i + 1 }}</span>
-              </td>
-              <td style="font-family:var(--mono);font-size:11px;color:var(--text-primary);">{{ c.id }}</td>
+            <tr *ngFor="let c of data.lastRunDetails.candidates; let i = index; trackBy: trackByCandidate" [class.winner-row]="i === 0">
+              <td><span class="rank" [class.rank--1]="i === 0" [class.rank--n]="i > 0">{{ i + 1 }}</span></td>
+              <td style="font-family:var(--mono);font-size:10px;color:var(--text-primary);max-width:160px;overflow:hidden;text-overflow:ellipsis;" [title]="c.id">{{ c.id }}</td>
               <td><span class="tag" [class]="locatorTypeClass(c.locatorType)">{{ c.locatorType }}</span></td>
-              <td>
-                <div class="candidate-score-bar">
-                  <div class="candidate-score-fill" [style.width.%]="c.blendedScore * 100" [style.background]="scoreColor(c.blendedScore)"></div>
-                  <span class="candidate-score-val">{{ c.blendedScore | number:'1.3-3' }}</span>
-                </div>
-              </td>
+              <td><div class="mini-score" [style.background]="scoreColor(c.blendedScore)">{{ c.blendedScore | number:'1.2-2' }}</div></td>
+              <td style="font-family:var(--mono);font-size:10px;">{{ c.semanticScore | number:'1.2-2' }}</td>
+              <td style="font-family:var(--mono);font-size:10px;">{{ c.contextualScore | number:'1.2-2' }}</td>
+              <td style="font-family:var(--mono);font-size:10px;">{{ c.tfidfScore | number:'1.2-2' }}</td>
+              <td style="font-family:var(--mono);font-size:10px;">{{ c.ssimScore | number:'1.2-2' }}</td>
               <td><span class="tag" [class]="stabilityClass(c.stability)">{{ c.stability }}</span></td>
             </tr>
           </tbody>
         </table>
       </div>
-      <ng-template #noCands><div class="empty-state">Run the pipeline to see candidates</div></ng-template>
     </div>
   </div>
 
-  <!-- Row 3: Confidence Timeline + History -->
-  <div class="section-grid">
-    <!-- Confidence Timeline -->
-    <div class="card anim-slide">
+  <!-- Tab: Traceability -->
+  <div class="tab-content" *ngIf="activeTab === 'traceability'">
+    <div class="card anim-slide" *ngIf="hasScreenshots">
       <div class="card-header">
-        <span class="card-title">Confidence Timeline</span>
-        <span class="card-sub">Last {{ timelineData.length }} runs</span>
+        <span class="card-title">Visual Traceability</span>
+        <span class="card-sub">AI Vision annotations overlay on full-page screenshot</span>
       </div>
-      <div class="card-body" *ngIf="timelineData.length >= 2; else noTimeline">
-        <app-timeline-chart [data]="timelineData" color="var(--accent)" [height]="90" [width]="350"></app-timeline-chart>
-      </div>
-      <ng-template #noTimeline><div class="empty-state">Insufficient history data</div></ng-template>
-    </div>
-  </div>
-
-  <!-- History Table -->
-  <div class="card anim-slide" *ngIf="history.length">
-    <div class="card-header">
-      <span class="card-title">Healing History</span>
-      <span class="card-sub">{{ history.length }} recent entries</span>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Time</th><th>Broken Selector</th><th>Baseline</th><th>Healed Selector</th><th>Confidence</th><th>Status</th></tr></thead>
-        <tbody>
-          <tr *ngFor="let h of history; trackBy: trackByHistory">
-            <td style="font-size:10px;color:var(--text-tertiary);font-family:var(--mono);">{{ h.ts | date:'HH:mm:ss' }}</td>
-            <td style="font-family:var(--mono);font-size:10px;color:var(--red);max-width:200px;overflow:hidden;text-overflow:ellipsis;" title="{{ h.brokenSelector }}">{{ h.brokenSelector }}</td>
-            <td>
-              <img *ngIf="h.baselineUrl" [src]="getFullUrl(h.baselineUrl)" (error)="h.baselineUrl = undefined" class="crop-thumb" title="{{ h.baselineText || '' }}" />
-              <span *ngIf="!h.baselineUrl" style="font-family:var(--mono);font-size:9px;color:var(--amber);">{{ h.baselineText || '—' }}</span>
-            </td>
-            <td style="font-family:var(--mono);font-size:10px;color:var(--green);max-width:200px;overflow:hidden;text-overflow:ellipsis;" title="{{ h.healedSelector }}">{{ h.healedSelector || '—' }}</td>
-            <td>
-              <div class="candidate-score-bar" style="width:80px;">
-                <div class="candidate-score-fill" [style.width.%]="(h.confidence || 0) * 100" [style.background]="scoreColor(h.confidence || 0)"></div>
+      <div class="card-body screenshot-body">
+        <div class="screenshot-layout">
+          <div class="screenshot-viewer" (click)="openZoom(screenshotAnnotatedUrl)">
+            <img [src]="screenshotAnnotatedUrl" alt="Annotated screenshot" (error)="onImgError('annotated')" [class.hidden]="imgError.annotated" />
+            <div class="screenshot-hint" *ngIf="!imgError.annotated">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Click to zoom
+            </div>
+          </div>
+          <div class="screenshot-legend" *ngIf="!imgError.annotated">
+            <div class="legend-title">Color Legend</div>
+            <div class="legend-item" *ngFor="let c of topCandidates; let i = index"
+                 (click)="selectCandidate(c)" [class.active]="candidateZoom?.rank === c.rank" [style.cursor]="c.bbox ? 'pointer' : 'default'">
+              <span class="legend-marker" [style.background]="zoomColors[i]">{{ i + 1 }}</span>
+              <div class="legend-info">
+                <span class="legend-rank">Rank #{{ i + 1 }}</span>
+                <span class="legend-id">{{ c.id }}</span>
+                <span class="legend-score" [style.color]="scoreColor(c.blendedScore)">{{ c.blendedScore | number:'1.3-3' }}</span>
               </div>
-            </td>
-            <td><span class="tag" [class.tag--green]="h.status === 'healed'" [class.tag--red]="h.status !== 'healed'">{{ h.status }}</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+            </div>
+          </div>
 
-  <!-- Locator Recovery Details -->
-  <!--<div class="card anim-slide" *ngIf="locatorResults.length">
-    <div class="card-header">
-      <span class="card-title">Locator Recovery Details</span>
-      <span class="card-sub">{{ locatorResults.length }} recent locators — broken locator, baseline query, healed result, and match status</span>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>#</th><th>Broken Locator</th><th>Baseline</th><th>Healed Locator</th><th>Confidence</th><th>Status</th></tr></thead>
-        <tbody>
-          <tr *ngFor="let l of locatorResults; let i = index; trackBy: trackByLocator" [class.winner-row]="l.status === 'healed'">
-            <td style="color:var(--text-tertiary);font-size:10px;">{{ i + 1 }}</td>
-            <td style="font-family:var(--mono);font-size:10px;color:var(--red);max-width:200px;overflow:hidden;text-overflow:ellipsis;" title="{{ l.brokenLocator }}">{{ l.brokenLocator }}</td>
-            <td>
-              <img *ngIf="l.baselineUrl" [src]="getFullUrl(l.baselineUrl)" (error)="l.baselineUrl = undefined" class="crop-thumb" title="{{ l.baselineText || '' }}" />
-              <span *ngIf="!l.baselineUrl" style="font-family:var(--mono);font-size:9px;color:var(--amber);">{{ l.baselineText || '—' }}</span>
-            </td>
-            <td style="font-family:var(--mono);font-size:10px;color:var(--green);max-width:200px;overflow:hidden;text-overflow:ellipsis;" title="{{ l.healedLocator }}">{{ l.healedLocator || '—' }}</td>
-            <td>
-              <div class="candidate-score-bar" style="width:80px;">
-                <div class="candidate-score-fill" [style.width.%]="(l.confidence || 0) * 100" [style.background]="scoreColor(l.confidence || 0)"></div>
+          <div class="zoom-panel" *ngIf="candidateZoom && selectedCropUrl">
+            <div class="zoom-panel-header">
+              <span class="zoom-panel-label">Element Crop — Rank #{{ candidateZoom.rank }}</span>
+              <span class="zoom-panel-score" [style.color]="scoreColor(candidateZoom.blendedScore)">{{ candidateZoom.blendedScore | number:'1.3-3' }}</span>
+              <span class="zoom-panel-id">{{ candidateZoom.id }}</span>
+              <button class="zoom-panel-close" (click)="clearCandidateZoom()" title="Close">&times;</button>
+            </div>
+            <div class="zoom-crop-body">
+              <div class="zoom-crop-col" *ngIf="screenshotBaselineUrl">
+                <div class="zoom-crop-label">Baseline</div>
+                <img [src]="screenshotBaselineUrl" alt="Baseline" class="zoom-crop-img" />
               </div>
-            </td>
-            <td>
-              <span class="tag" [class.tag--green]="l.status === 'healed'" [class.tag--red]="l.status !== 'healed'">
-                <span *ngIf="l.status === 'healed'">✓ Found</span>
-                <span *ngIf="l.status !== 'healed'">✗ Not Found</span>
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
--->
-  <!-- Visual Traceability -->
-  <div class="card anim-slide" *ngIf="hasScreenshots">
-    <div class="card-header">
-      <span class="card-title">Visual Traceability</span>
-      <span class="card-sub">AI Vision annotations overlay on full-page screenshot</span>
-    </div>
-    <div class="card-body screenshot-body">
-      <div class="screenshot-layout">
-        <div class="screenshot-viewer" (click)="openZoom(screenshotAnnotatedUrl)">
-          <img [src]="screenshotAnnotatedUrl" alt="Annotated screenshot" (error)="onImgError('annotated')" [class.hidden]="imgError.annotated" />
-          <div class="screenshot-hint" *ngIf="!imgError.annotated">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            Click to zoom
-          </div>
-        </div>
-        <div class="screenshot-legend" *ngIf="!imgError.annotated">
-          <div class="legend-title">Color Legend</div>
-          <div class="legend-item" *ngFor="let c of topCandidates; let i = index"
-               (click)="selectCandidate(c)" [class.active]="candidateZoom?.rank === c.rank" [style.cursor]="c.bbox ? 'pointer' : 'default'">
-            <span class="legend-marker" [style.background]="zoomColors[i]">{{ i + 1 }}</span>
-            <div class="legend-info">
-              <span class="legend-rank">Rank #{{ i + 1 }}</span>
-              <span class="legend-id">{{ c.id }}</span>
-              <span class="legend-score" [style.color]="scoreColor(c.blendedScore)">{{ c.blendedScore | number:'1.3-3' }}</span>
+              <div class="zoom-crop-col">
+                <div class="zoom-crop-label">Candidate #{{ candidateZoom.rank }}</div>
+                <img [src]="selectedCropUrl" alt="Candidate crop" class="zoom-crop-img"
+                     [style.border-color]="zoomColors[(candidateZoom.rank || 1) - 1] || '#f59e0b'" />
+              </div>
             </div>
           </div>
         </div>
+        <div class="baseline-row" *ngIf="!imgError.baseline">
+          <div class="baseline-card">
+            <div class="baseline-label">Baseline Crop</div>
+            <img [src]="screenshotBaselineUrl" alt="Baseline crop" (error)="onImgError('baseline')" />
+          </div>
+        </div>
+      </div>
+    </div>
 
-        <!-- Zoom Panel: crop comparison -->
-        <div class="zoom-panel" *ngIf="candidateZoom && selectedCropUrl">
-          <div class="zoom-panel-header">
-            <span class="zoom-panel-label">Element Crop — Rank #{{ candidateZoom.rank }}</span>
-            <span class="zoom-panel-score" [style.color]="scoreColor(candidateZoom.blendedScore)">{{ candidateZoom.blendedScore | number:'1.3-3' }}</span>
-            <span class="zoom-panel-id">{{ candidateZoom.id }}</span>
-            <button class="zoom-panel-close" (click)="clearCandidateZoom()" title="Close">&times;</button>
-          </div>
-          <div class="zoom-crop-body">
-            <div class="zoom-crop-col" *ngIf="screenshotBaselineUrl">
-              <div class="zoom-crop-label">Baseline</div>
-              <img [src]="screenshotBaselineUrl" alt="Baseline" class="zoom-crop-img" />
-            </div>
-            <div class="zoom-crop-col">
-              <div class="zoom-crop-label">Candidate #{{ candidateZoom.rank }}</div>
-              <img [src]="selectedCropUrl" alt="Candidate crop" class="zoom-crop-img"
-                   [style.border-color]="zoomColors[(candidateZoom.rank || 1) - 1] || '#f59e0b'" />
-            </div>
-          </div>
-        </div>
+    <div class="empty-state" *ngIf="!hasScreenshots" style="padding:48px">
+      <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="var(--text-tertiary)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      <div style="color:var(--text-tertiary);font-size:12px;margin-top:8px;">Visual traceability requires a pipeline run with screenshots enabled</div>
+    </div>
+
+    <div class="card anim-slide" *ngIf="history.length">
+      <div class="card-header">
+        <span class="card-title">Full Healing History</span>
+        <span class="card-sub">{{ history.length }} entries</span>
       </div>
-      <div class="baseline-row" *ngIf="!imgError.baseline">
-        <div class="baseline-card">
-          <div class="baseline-label">Baseline Crop</div>
-          <img [src]="screenshotBaselineUrl" alt="Baseline crop" (error)="onImgError('baseline')" />
-        </div>
-      </div>
-      <div class="empty-state" style="grid-column:1/-1;padding:32px" *ngIf="imgError.annotated && imgError.baseline">
-        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="var(--text-tertiary)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-        <div style="color:var(--text-tertiary);font-size:12px;margin-top:8px;">No screenshots available for this run</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Time</th><th>Broken Selector</th><th>Baseline</th><th>Healed Selector</th><th>Confidence</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let h of history; trackBy: trackByHistory">
+              <td style="font-size:10px;color:var(--text-tertiary);font-family:var(--mono);">{{ h.ts | date:'HH:mm:ss' }}</td>
+              <td style="font-family:var(--mono);font-size:10px;color:var(--red);max-width:200px;overflow:hidden;text-overflow:ellipsis;" title="{{ h.brokenSelector }}">{{ h.brokenSelector }}</td>
+              <td>
+                <img *ngIf="h.baselineUrl" [src]="getFullUrl(h.baselineUrl)" (error)="h.baselineUrl = undefined" class="crop-thumb" title="{{ h.baselineText || '' }}" />
+                <span *ngIf="!h.baselineUrl" style="font-family:var(--mono);font-size:9px;color:var(--amber);">{{ h.baselineText || '—' }}</span>
+              </td>
+              <td style="font-family:var(--mono);font-size:10px;color:var(--green);max-width:200px;overflow:hidden;text-overflow:ellipsis;" title="{{ h.healedSelector }}">{{ h.healedSelector || '—' }}</td>
+              <td>
+                <div class="candidate-score-bar" style="width:80px;">
+                  <div class="candidate-score-fill" [style.width.%]="(h.confidence || 0) * 100" [style.background]="scoreColor(h.confidence || 0)"></div>
+                </div>
+              </td>
+              <td><span class="tag" [class.tag--green]="h.status === 'healed'" [class.tag--red]="h.status !== 'healed'">{{ h.status }}</span></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
-  </div>
-
-  <!-- No screenshots fallback -->
-  <div class="empty-state" *ngIf="!hasScreenshots && !imgError.annotated && data && !loading" style="padding:32px">
-    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--text-tertiary)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-    <div style="color:var(--text-tertiary);font-size:11px;margin-top:6px;">Visual traceability requires a pipeline run with screenshots enabled</div>
   </div>
 
 </div>
